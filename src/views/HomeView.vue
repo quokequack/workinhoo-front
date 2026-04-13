@@ -774,9 +774,10 @@ main {
   overflow: hidden;
   isolation: isolate;
   transform: translateZ(0);
+  mask-image: radial-gradient(white, black);
   -webkit-mask-image: -webkit-radial-gradient(white, black);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.3s ease;
+    box-shadow 0.3s ease;
   cursor: default;
 }
 
@@ -913,7 +914,7 @@ main {
   align-items: center;
   justify-content: center;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.3s ease;
+    box-shadow 0.3s ease;
 }
 
 .para-quem>div:hover div.icon {
@@ -1005,7 +1006,7 @@ main {
   justify-content: center;
   flex-shrink: 0;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.3s ease;
+    box-shadow 0.3s ease;
 }
 
 .como-funciona-icone-wrapper:hover {
@@ -1045,7 +1046,7 @@ main {
   height: 14rem;
   padding: 1rem;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.35s ease;
+    box-shadow 0.35s ease;
 }
 
 .como-funciona-imagem-wrapper:hover {
@@ -1105,8 +1106,15 @@ main {
 }
 
 @keyframes pulse-suave {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
 }
 
 .star-icon {
@@ -1116,17 +1124,29 @@ main {
 }
 
 @keyframes girar-lento {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.como-funciona > div > img[alt="ícone de seta pra baixo"] {
+.como-funciona>div>img[alt="ícone de seta pra baixo"] {
   animation: bounce-down 1.8s ease-in-out infinite;
 }
 
 @keyframes bounce-down {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(6px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(6px);
+  }
 }
 
 .servicos {
@@ -1187,7 +1207,7 @@ main {
   background-repeat: no-repeat;
   min-width: 0;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.35s ease;
+    box-shadow 0.35s ease;
 }
 
 .servico-card:hover {
@@ -1273,7 +1293,7 @@ main {
 
 .btn-criar-conta {
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.25s ease;
+    box-shadow 0.25s ease;
   text-decoration: none;
 }
 
@@ -1408,7 +1428,7 @@ footer .contato div {
   opacity: 0;
   transform: translateY(32px);
   transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reveal.reveal--visivel {
@@ -1416,10 +1436,21 @@ footer .contato div {
   transform: translateY(0);
 }
 
-.reveal--delay-1 { transition-delay: 0.1s; }
-.reveal--delay-2 { transition-delay: 0.2s; }
-.reveal--delay-3 { transition-delay: 0.3s; }
-.reveal--delay-4 { transition-delay: 0.4s; }
+.reveal--delay-1 {
+  transition-delay: 0.1s;
+}
+
+.reveal--delay-2 {
+  transition-delay: 0.2s;
+}
+
+.reveal--delay-3 {
+  transition-delay: 0.3s;
+}
+
+.reveal--delay-4 {
+  transition-delay: 0.4s;
+}
 
 /* ============================================
    REDUCED MOTION
@@ -1437,7 +1468,7 @@ footer .contato div {
   .btn-criar-conta,
   .star-icon,
   .como-funciona .banner div,
-  .como-funciona > div > img {
+  .como-funciona>div>img {
     animation: none !important;
     transition: none !important;
   }
