@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import pintorImg from '@/assets/images/pintor.jpg'
 import eletristaImg from '@/assets/images/eletricista.jpg'
 import daristaImg from '@/assets/images/diarista.jpg'
@@ -6,6 +7,32 @@ import mecanicoImg from '@/assets/images/mecanico.jpg'
 import tatuadorImg from '@/assets/images/tatuador.jpg'
 import encanadorImg from '@/assets/images/encanador.jpg'
 import pedreiroImg from '@/assets/images/pedreiro.jpg'
+
+const menuAberto = ref(false)
+
+function toggleMenu() {
+  menuAberto.value = !menuAberto.value
+}
+
+function fecharMenu() {
+  menuAberto.value = false
+}
+
+onMounted(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal--visivel')
+          observer.unobserve(entry.target)
+        }
+      })
+    },
+    { threshold: 0.15 }
+  )
+
+  document.querySelectorAll('.reveal').forEach((el) => observer.observe(el))
+})
 </script>
 
 <template>
@@ -28,32 +55,75 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
       <router-link to="/entrar" class="btn-entrar">Entrar</router-link>
       <router-link to="/cadastrar" class="btn-cadastrar">Cadastrar</router-link>
     </div>
+
+    <button class="hamburger" :class="{ 'hamburger--ativo': menuAberto }" @click="toggleMenu" aria-label="Abrir menu">
+      <span class="hamburger__linha"></span>
+      <span class="hamburger__linha"></span>
+      <span class="hamburger__linha"></span>
+    </button>
   </header>
+
+  <Transition name="overlay">
+    <div v-if="menuAberto" class="menu-overlay" @click="fecharMenu"></div>
+  </Transition>
+
+  <Transition name="drawer">
+    <div v-if="menuAberto" class="menu-drawer">
+      <div class="drawer-logo">
+        <h2>Workinhoo</h2>
+        <button class="drawer-fechar" @click="fecharMenu" aria-label="Fechar menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <nav class="drawer-nav">
+        <a href="#sobre" class="drawer-link" @click="fecharMenu">
+          <span class="drawer-link__num">01</span>
+          <span class="drawer-link__texto">Sobre</span>
+        </a>
+        <a href="#como-funciona" class="drawer-link" @click="fecharMenu">
+          <span class="drawer-link__num">02</span>
+          <span class="drawer-link__texto">Como funciona</span>
+        </a>
+        <a href="#servicos" class="drawer-link" @click="fecharMenu">
+          <span class="drawer-link__num">03</span>
+          <span class="drawer-link__texto">Serviços</span>
+        </a>
+      </nav>
+
+      <div class="drawer-acoes">
+        <router-link to="/entrar" class="drawer-btn-entrar" @click="fecharMenu">Entrar</router-link>
+        <router-link to="/cadastrar" class="drawer-btn-cadastrar" @click="fecharMenu">Cadastrar</router-link>
+      </div>
+    </div>
+  </Transition>
 
   <main>
     <section class="criar-conta">
-      <div class="left-content">
+      <div class="left-content reveal">
         <h1>Encontre <span class="texto-highlight">profissionais perto de você</span>, sem complicação</h1>
         <p>Conectamos você a profissionais locais de forma simples e rápida.</p>
         <router-link to="/cadastrar" class="btn-criar-conta">Criar conta <img src="@/assets/icons/arrow.svg"
             alt="ícone de seta"></router-link>
       </div>
-      <div class="right-content">
+      <div class="right-content reveal reveal--delay-2">
         <img src="@/assets/images/greeting.svg" alt="imagem de pessoas se cumprimentando" />
       </div>
     </section>
 
     <section class="sobre" id="sobre">
       <div class="content">
-        <h1>
+        <h1 class="reveal">
           O que é o Workinhoo?
         </h1>
-        <p>
+        <p class="reveal reveal--delay-1">
           O <b>Workinhoo</b> é uma plataforma que conecta você a profissionais autônomos da sua região, facilitando a
           busca por serviços do dia a dia.
         </p>
         <div class="cards">
-          <div class="card card-verde">
+          <div class="card card-verde reveal reveal--delay-1">
             <div class="card-texto">
               <h3>Simples</h3>
               <p>Serviços em poucos passos</p>
@@ -63,7 +133,7 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
             </div>
           </div>
 
-          <div class="card card-cinza">
+          <div class="card card-cinza reveal reveal--delay-2">
             <div class="card-texto">
               <h3>Local</h3>
               <p>Profissionais perto de você</p>
@@ -73,7 +143,7 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
             </div>
           </div>
 
-          <div class="card card-amarelo">
+          <div class="card card-amarelo reveal reveal--delay-3">
             <div class="card-texto">
               <h3>Prático</h3>
               <p>Fale direto com o profissional</p>
@@ -87,15 +157,15 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
     </section>
 
     <section class="para-quem">
-      <h1>Para quem é o Workinhoo?</h1>
-      <div>
+      <h1 class="reveal">Para quem é o Workinhoo?</h1>
+      <div class="reveal reveal--delay-1">
         <div class="icon">
           <img src="@/assets/icons/user.svg" alt="ícone de usuário" />
         </div>
         <p class="title">Para quem <b>precisa de serviços</b></p>
         <p class="text">Encontre profissionais perto de você para te ajudar</p>
       </div>
-      <div>
+      <div class="reveal reveal--delay-2">
         <div class="icon">
           <img src="@/assets/icons/tools.svg" alt="ícone de usuário" />
         </div>
@@ -109,7 +179,7 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
         <h1 class="como-funciona-titulo">Como funciona</h1>
       </div>
 
-      <div class="como-funciona-passo como-funciona-passo-normal">
+      <div class="como-funciona-passo como-funciona-passo-normal reveal">
         <div class="como-funciona-conteudo">
           <h1 class="como-funciona-numero">01</h1>
           <div class="como-funciona-cabecalho">
@@ -127,7 +197,7 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
 
       <div><img src="@/assets/icons/arrow-down.svg" alt="ícone de seta pra baixo"></div>
 
-      <div class="como-funciona-passo como-funciona-passo-invertido">
+      <div class="como-funciona-passo como-funciona-passo-invertido reveal">
         <div class="como-funciona-imagem-wrapper">
           <img src="@/assets/images/profiles.svg" alt="imagem de perfis" class="como-funciona-imagem" />
         </div>
@@ -146,7 +216,7 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
 
       <div><img src="@/assets/icons/arrow-down.svg" alt="ícone de seta pra baixo"></div>
 
-      <div class="como-funciona-passo como-funciona-passo-normal">
+      <div class="como-funciona-passo como-funciona-passo-normal reveal">
         <div class="como-funciona-conteudo">
           <h1 class="como-funciona-numero">03</h1>
           <div class="como-funciona-cabecalho">
@@ -162,7 +232,7 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
         </div>
       </div>
 
-      <div class="banner">
+      <div class="banner reveal">
         <h1>É prestador de serviço?</h1>
         <p><b>Cadastre-se</b> na plataforma e <b>divulgue seus serviços</b> para encontrar novos clientes e aumentar
           suas oportunidades de trabalho.</p>
@@ -175,13 +245,13 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
     </section>
 
     <section class="servicos" id="servicos">
-      <div class="servicos-header">
+      <div class="servicos-header reveal">
         <h1>O <b>Workinhoo</b> reúne profissionais de inúmeras áreas</h1>
         <p>Serviços para diversas necessidades do seu dia a dia</p>
       </div>
 
-      <div class="servicos-grid">
-        <div class="servicos-linha">
+      <div class="servicos-grid reveal">
+        <div class="servicos-linha servicos-linha--desktop">
           <div class="servico-card" :style="{ flex: 209, backgroundImage: `url(${pintorImg})` }">
             <span>Pintor</span>
           </div>
@@ -195,7 +265,26 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
             <span>Mecânico</span>
           </div>
         </div>
-        <div class="servicos-linha">
+
+        <div class="servicos-linha servicos-linha--mobile">
+          <div class="servico-card" :style="{ flex: 209, backgroundImage: `url(${pintorImg})` }">
+            <span>Pintor</span>
+          </div>
+          <div class="servico-card" :style="{ flex: 406, backgroundImage: `url(${eletristaImg})` }">
+            <span>Eletricista</span>
+          </div>
+        </div>
+
+        <div class="servicos-linha servicos-linha--mobile">
+          <div class="servico-card" :style="{ flex: 271, backgroundImage: `url(${daristaImg})` }">
+            <span>Diarista</span>
+          </div>
+          <div class="servico-card" :style="{ flex: 214, backgroundImage: `url(${mecanicoImg})` }">
+            <span>Mecânico</span>
+          </div>
+        </div>
+
+        <div class="servicos-linha servicos-linha--desktop">
           <div class="servico-card" :style="{ flex: 342, backgroundImage: `url(${tatuadorImg})` }">
             <span>Tatuador</span>
           </div>
@@ -206,9 +295,67 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
             <span>Pedreiro</span>
           </div>
         </div>
+
+        <div class="servicos-linha servicos-linha--mobile">
+          <div class="servico-card" :style="{ flex: 342, backgroundImage: `url(${tatuadorImg})` }">
+            <span>Tatuador</span>
+          </div>
+          <div class="servico-card" :style="{ flex: 273, backgroundImage: `url(${encanadorImg})` }">
+            <span>Encanador</span>
+          </div>
+        </div>
+
+        <div class="servicos-linha servicos-linha--mobile">
+          <div class="servico-card" :style="{ flex: 1, backgroundImage: `url(${pedreiroImg})` }">
+            <span>Pedreiro</span>
+          </div>
+        </div>
       </div>
     </section>
+
+    <section class="comece-agora reveal">
+      <h1>
+        Comece agora no <b>Workinhoo</b>
+      </h1>
+      <p><b>Encontre profissionais</b> ou <b>divulgue seus serviços</b> de forma simples.</p>
+      <router-link to="/cadastrar" class="btn-criar-conta">Criar conta <img src="@/assets/icons/arrow.svg"
+          alt="ícone de seta"></router-link>
+    </section>
   </main>
+
+  <footer>
+    <div class="footer-content">
+      <div class="logo section reveal">
+        <h1>Workinhoo</h1>
+        <div>
+          <img src="@/assets/icons/toolbox.svg" alt="ícone de caixa de ferramentas" />
+          <p>Conectando você a profissionais locais</p>
+        </div>
+      </div>
+
+      <div class="menu-nav section reveal reveal--delay-1">
+        <h1>Links rápidos</h1>
+        <ul>
+          <li><a href="#sobre">Sobre</a></li>
+          <li><a href="#como-funciona">Como funciona</a></li>
+          <li><a href="#servicos">Serviços</a></li>
+          <li><router-link to="/entrar">Entrar</router-link></li>
+          <li><router-link to="/cadastrar">Cadastrar</router-link></li>
+        </ul>
+      </div>
+
+      <div class="contato section reveal reveal--delay-2">
+        <h1>Contato</h1>
+        <div>
+          <img src="@/assets/icons/mail.svg" alt="ícone de e-mail" />
+          <p>workinhoo@gmail.com</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-copyright">
+      <p>© 2026 Workinhoo. Todos os direitos reservados.</p>
+    </div>
+  </footer>
 </template>
 
 <style scoped>
@@ -218,82 +365,328 @@ header {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  margin: 0 auto;
-  width: 80%;
-  height: 7rem;
-  padding: 0 2rem;
-  border-bottom-left-radius: 24px;
-  border-bottom-right-radius: 24px;
+  width: 100%;
+  height: 5rem;
+  padding: 0 1.25rem;
   box-shadow: 0px 4px 16px 0px #2A2A2A0D;
+  margin-bottom: 1rem;
+  position: fixed;
+  top: 0;
+  z-index: 100;
 }
 
-.logo {
+header .logo {
   color: var(--color-primary-medium);
   font-weight: 700;
-  font-size: 1.5rem;
-}
-
-.menu-nav nav ul {
-  display: flex;
-  align-items: center;
-  gap: 3rem;
-  list-style: none;
-  padding: 0;
-}
-
-.menu-nav nav ul a {
-  color: var(--color-neutral-dark);
-  font-family: Poppins;
-  font-weight: 600;
   font-size: 1.2rem;
 }
 
+.menu-nav {
+  display: none;
+}
+
 .menu-login {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
+  display: none;
 }
 
 .btn-entrar {
   color: var(--color-neutral-dark);
   font-family: Poppins;
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 0.9rem;
 }
 
 .btn-cadastrar {
   background-color: var(--color-primary-medium);
   color: var(--color-neutral-light-lightest);
   font-family: Poppins;
-  padding: 1rem 1.5rem;
+  padding: 0.5rem 1rem;
   border-radius: 24px;
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 0.9rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-cadastrar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(88, 60, 196, 0.35);
+  opacity: 0.92;
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  background: var(--color-primary-medium);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(88, 60, 196, 0.35);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.hamburger:active {
+  transform: scale(0.92);
+}
+
+.hamburger:hover {
+  box-shadow: 0 6px 20px rgba(88, 60, 196, 0.5);
+  transform: scale(1.05);
+}
+
+.hamburger__linha {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 2px;
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.3s ease,
+    width 0.3s ease;
+  transform-origin: center;
+}
+
+.hamburger--ativo .hamburger__linha:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger--ativo .hamburger__linha:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hamburger--ativo .hamburger__linha:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 10, 50, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 200;
+}
+
+.overlay-enter-active,
+.overlay-leave-active {
+  transition: opacity 0.35s ease;
+}
+
+.overlay-enter-from,
+.overlay-leave-to {
+  opacity: 0;
+}
+
+.menu-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(80vw, 300px);
+  height: 100dvh;
+  background: var(--color-neutral-light-white);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem 1.5rem 2.5rem;
+  box-shadow: -8px 0 40px rgba(20, 10, 50, 0.18);
+  border-radius: 24px 0 0 24px;
+  overflow: hidden;
+}
+
+.drawer-enter-active {
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.drawer-leave-active {
+  transition: transform 0.3s cubic-bezier(0.55, 0, 1, 0.45);
+}
+
+.drawer-enter-from,
+.drawer-leave-to {
+  transform: translateX(100%);
+}
+
+.drawer-logo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+}
+
+.drawer-logo h2 {
+  color: var(--color-primary-medium);
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.drawer-fechar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-neutral-dark);
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.drawer-fechar:hover {
+  background: #f0eeff;
+  color: var(--color-primary-medium);
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.drawer-nav::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: #ece9f8;
+  margin: 1rem 0;
+}
+
+.drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--color-neutral-dark);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.drawer-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--color-primary-medium), var(--color-secondary-medium));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  border-radius: 14px;
+}
+
+.drawer-link:hover::after,
+.drawer-link:active::after {
+  opacity: 1;
+}
+
+.drawer-link:hover .drawer-link__num,
+.drawer-link:hover .drawer-link__texto,
+.drawer-link:active .drawer-link__num,
+.drawer-link:active .drawer-link__texto {
+  color: #ffffff;
+}
+
+.drawer-link:active {
+  transform: scale(0.97);
+}
+
+.drawer-link__num {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-primary-medium);
+  letter-spacing: 0.05em;
+  min-width: 24px;
+  position: relative;
+  z-index: 1;
+  transition: color 0.2s ease;
+}
+
+.drawer-link__texto {
+  font-size: 1.05rem;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+  transition: color 0.2s ease;
+}
+
+.drawer-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.drawer-btn-entrar {
+  display: block;
+  text-align: center;
+  padding: 0.85rem 1.5rem;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-primary-medium);
+  border: 2px solid var(--color-primary-medium);
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.drawer-btn-entrar:hover {
+  background: #f0eeff;
+}
+
+.drawer-btn-cadastrar {
+  display: block;
+  text-align: center;
+  padding: 0.85rem 1.5rem;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: var(--color-primary-medium);
+  color: #ffffff;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(88, 60, 196, 0.35);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.drawer-btn-cadastrar:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+main {
+  padding-top: 5rem;
 }
 
 .criar-conta {
   background-color: var(--color-primary-medium);
-  border-radius: 24px;
+  border-radius: 0 0 0px 0px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  margin: 2rem auto;
-  padding: 6rem 6rem;
-  width: 80%;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  width: 100%;
+  gap: 2rem;
   box-shadow: 0px 0px 10px 2px #0000001A;
 }
 
 .criar-conta .left-content {
-  width: 60%;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 1.25rem;
 }
 
 .criar-conta .left-content h1 {
   color: var(--color-neutral-light-lightest);
-  font-size: 3.5rem;
-  width: 70%;
+  font-size: 1.75rem;
+  width: 100%;
   line-height: 1.3;
 }
 
@@ -303,30 +696,30 @@ header {
 
 .criar-conta .left-content p {
   color: var(--color-neutral-light-lightest);
-  font-size: 2rem;
-  width: 70%;
+  font-size: 1rem;
+  width: 100%;
 }
 
 .criar-conta .left-content .btn-criar-conta {
   background-color: var(--color-secondary-medium);
   color: var(--color-neutral-light-lightest);
   width: fit-content;
-  border-radius: 24px;
-  font-size: 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  justify-content: space-between;
-  padding: 1rem 2rem;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
 }
 
 .criar-conta .left-content .btn-criar-conta img {
-  width: 1.5rem;
+  width: 1rem;
 }
 
 .criar-conta .right-content {
-  width: 40%;
+  width: 80%;
+  max-width: 260px;
 }
 
 .criar-conta .right-content img {
@@ -334,7 +727,7 @@ header {
 }
 
 .sobre {
-  padding: 4rem 0;
+  padding: 3rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -342,63 +735,85 @@ header {
 }
 
 .sobre .content {
-  width: 80%;
+  width: 90%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5rem;
+  gap: 2rem;
 }
 
 .sobre h1 {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-neutral-dark);
   text-align: center;
 }
 
 .sobre p {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: var(--color-neutral-dark);
+  text-align: center;
 }
 
 .cards {
   display: flex;
-  gap: 4rem;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
 }
 
 .card {
-  flex: 1;
   border-radius: 24px;
-  padding: 2rem;
+  padding: 1.5rem;
   display: flex;
   justify-content: space-between;
-  width: 22rem;
-  height: 15rem;
+  width: 100%;
+  height: 10rem;
   position: relative;
   overflow: hidden;
+  isolation: isolate;
+  transform: translateZ(0);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s ease;
+  cursor: default;
+}
+
+.card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.13);
+}
+
+.card:hover .card-icone img {
+  transform: scale(1.06) rotate(-4deg);
+}
+
+.card-icone img {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-texto {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.75rem;
   z-index: 1;
 }
 
 .card-texto h3 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--color-neutral-light-white);
 }
 
 .card-texto p {
-  font-size: 1.1rem;
-  margin-top: 1rem;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
   font-weight: 600;
   color: var(--color-neutral-light-white);
   max-width: 160px;
   line-height: 1.4;
+  text-align: left;
 }
 
 .card-verde {
@@ -407,13 +822,13 @@ header {
 
 .card-verde .card-icone {
   position: absolute;
-  right: -90px;
-  bottom: -50px;
+  right: -70px;
+  bottom: -30px;
 }
 
 .card-verde .card-icone img {
-  width: 300px;
-  height: 300px;
+  width: clamp(160px, 50vw, 270px);
+  height: clamp(160px, 50vw, 270px);
   object-fit: contain;
 }
 
@@ -423,13 +838,13 @@ header {
 
 .card-cinza .card-icone {
   position: absolute;
-  right: -110px;
+  right: -70px;
   bottom: -30px;
 }
 
 .card-cinza .card-icone img {
-  width: 280px;
-  height: 280px;
+  width: clamp(150px, 48vw, 250px);
+  height: clamp(150px, 48vw, 250px);
   object-fit: contain;
 }
 
@@ -439,13 +854,13 @@ header {
 
 .card-amarelo .card-icone {
   position: absolute;
-  right: -80px;
+  right: -40px;
   bottom: -20px;
 }
 
 .card-amarelo .card-icone img {
-  width: 240px;
-  height: 240px;
+  width: clamp(130px, 42vw, 210px);
+  height: clamp(130px, 42vw, 210px);
   object-fit: contain;
 }
 
@@ -456,76 +871,92 @@ header {
 }
 
 .para-quem {
-  width: 80%;
+  width: 90%;
   margin: 0 auto;
-  padding: 8rem 0;
+  padding: 3rem 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 2rem;
 }
 
 .para-quem h1 {
-  font-size: 2.5rem;
-  max-width: 300px;
+  font-size: 1.5rem;
+  max-width: 100%;
   text-align: center;
   font-weight: 600;
   color: var(--color-neutral-dark);
 }
 
-.para-quem div {
+.para-quem>div {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
+  width: 100%;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.para-quem div div {
+.para-quem>div:hover {
+  transform: translateY(-4px);
+}
+
+.para-quem div div.icon,
+.para-quem>div>div:first-child {
   background-color: var(--color-primary-medium);
   border-radius: 24px;
   box-shadow: 0px 0px 20px 2px #5656561A;
-  width: 120px;
-  height: 120px;
+  width: 90px;
+  height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s ease;
+}
+
+.para-quem>div:hover div.icon {
+  transform: scale(1.08) rotate(-6deg);
+  box-shadow: 0 12px 30px rgba(88, 60, 196, 0.3);
 }
 
 .para-quem .icon img {
-  width: 70px;
-  height: 70px;
+  width: 55px;
+  height: 55px;
 }
 
 .para-quem .title {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 500;
   color: var(--color-neutral-dark);
   text-align: center;
 }
 
 .para-quem .text {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 400;
   color: var(--color-neutral-dark);
   text-align: center;
-  max-width: 70%;
+  max-width: 80%;
 }
 
 .como-funciona {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4rem;
+  gap: 2rem;
   background-color: #AEBDD526;
 }
 
 .como-funciona-title {
   background-color: #A6B4CA;
   width: 100%;
-  padding: 2rem 0;
+  padding: 1.5rem 0;
 }
 
 .como-funciona-titulo {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-neutral-light-white);
   text-align: center;
@@ -533,25 +964,25 @@ header {
 
 .como-funciona-passo {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 4rem;
-  max-width: 80%;
+  gap: 1.5rem;
+  width: 90%;
 }
 
 .como-funciona-passo-invertido {
-  flex-direction: row;
+  flex-direction: column-reverse;
 }
 
 .como-funciona-conteudo {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  flex: 1;
+  gap: 1rem;
+  width: 100%;
 }
 
 .como-funciona-numero {
-  font-size: 5rem;
+  font-size: 3.5rem;
   font-weight: 800;
   color: var(--color-neutral-darkest);
   line-height: 1;
@@ -561,53 +992,65 @@ header {
 .como-funciona-cabecalho {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .como-funciona-icone-wrapper {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   background-color: var(--color-primary-medium);
-  border-radius: 16px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s ease;
+}
+
+.como-funciona-icone-wrapper:hover {
+  transform: scale(1.12) rotate(-5deg);
+  box-shadow: 0 8px 24px rgba(88, 60, 196, 0.35);
 }
 
 .como-funciona-icone {
-  width: 50px;
-  height: 50px;
+  width: 38px;
+  height: 38px;
   filter: brightness(0) invert(1);
 }
 
 .como-funciona-subtitulo {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-neutral-darkest);
   margin: 0;
 }
 
 .como-funciona-descricao {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: var(--color-neutral-dark);
   line-height: 1.5;
   margin: 0;
 }
 
 .como-funciona-imagem-wrapper {
-  flex: 1;
+  width: 100%;
   background-color: var(--color-neutral-light-white);
   border-radius: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   overflow: hidden;
   box-shadow: 0px 0px 20px 2px #2DB4871A;
-  height: 22rem;
-  max-width: 35rem;
-  padding: 1.5rem;
+  height: 14rem;
+  padding: 1rem;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s ease;
+}
+
+.como-funciona-imagem-wrapper:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(45, 180, 135, 0.18);
 }
 
 .como-funciona-imagem {
@@ -618,27 +1061,28 @@ header {
 
 .como-funciona .banner {
   background-color: var(--color-primary-medium);
-  width: 80%;
+  width: 90%;
   border-radius: 24px;
   box-shadow: 0px 5px 20px 2px #8B8B8B1A;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4rem;
-  padding: 4rem;
-  margin: 4rem 0;
+  gap: 2rem;
+  padding: 2rem 1.5rem;
+  margin: 2rem 0;
 }
 
 .como-funciona .banner h1 {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-neutral-light-white);
+  text-align: center;
 }
 
 .como-funciona .banner p {
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 400;
-  width: 80%;
+  width: 100%;
   margin: 0 auto;
   color: var(--color-neutral-light-white);
   text-align: center;
@@ -650,69 +1094,106 @@ header {
   align-items: center;
   background-color: var(--color-neutral-light-white);
   border-radius: 100%;
-  width: 11rem;
-  height: 11rem;
+  width: 8rem;
+  height: 8rem;
+  animation: pulse-suave 3s ease-in-out infinite;
 }
 
 .como-funciona .banner div img {
-  width: 11rem;
-  height: 11rem;
+  width: 8rem;
+  height: 8rem;
+}
+
+@keyframes pulse-suave {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
 }
 
 .star-icon {
   margin-bottom: -50px;
+  animation: girar-lento 12s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes girar-lento {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.como-funciona > div > img[alt="ícone de seta pra baixo"] {
+  animation: bounce-down 1.8s ease-in-out infinite;
+}
+
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
 }
 
 .servicos {
-  padding: 8rem 0;
+  padding: 4rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3rem;
+  gap: 2rem;
   background-color: var(--color-neutral-light-white);
+  margin-bottom: 2rem;
 }
 
 .servicos-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   text-align: center;
+  padding: 0 1.25rem;
 }
 
 .servicos-header h1 {
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 500;
   color: var(--color-neutral-dark);
 }
 
 .servicos-header p {
-  font-size: 1.3rem;
+  font-size: 1rem;
   color: var(--color-neutral-dark);
+}
+
+.servicos-linha--desktop {
+  display: none;
+}
+
+.servicos-linha--mobile {
+  display: flex;
+  gap: 1rem;
+  height: 40vw;
+  min-height: 100px;
 }
 
 .servicos-grid {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  width: 80%;
-}
-
-.servicos-linha {
-  display: flex;
-  gap: 2rem;
-  height: 18vw;
-  min-height: 160px;
+  gap: 1rem;
+  width: 90%;
 }
 
 .servico-card {
   position: relative;
-  border-radius: 22px;
+  border-radius: 16px;
   overflow: hidden;
   box-shadow: 0px 0px 19.05px 1.9px #5656561A;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  min-width: 0;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s ease;
+}
+
+.servico-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  z-index: 2;
 }
 
 .servico-card::after {
@@ -726,8 +1207,11 @@ header {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  image-rendering: high-quality;
-  will-change: transform;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.servico-card:hover img {
+  transform: scale(1.08);
 }
 
 .servico-card span {
@@ -736,9 +1220,877 @@ header {
   left: 50%;
   transform: translate(-50%, 50%);
   color: var(--color-neutral-light-white);
-  font-size: 1.3rem;
+  font-size: 0.85rem;
   font-weight: 700;
   white-space: nowrap;
   z-index: 1;
+  transition: letter-spacing 0.3s ease;
+}
+
+.servico-card:hover span {
+  letter-spacing: 0.05em;
+}
+
+.comece-agora {
+  background-color: var(--color-primary-medium);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 3rem 1.5rem;
+}
+
+.comece-agora h1 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--color-neutral-light-white);
+  text-align: center;
+}
+
+.comece-agora p {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--color-neutral-light-white);
+  text-align: center;
+}
+
+.comece-agora .btn-criar-conta {
+  background-color: var(--color-secondary-medium);
+  color: var(--color-neutral-light-lightest);
+  width: fit-content;
+  border-radius: 24px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.comece-agora .btn-criar-conta img {
+  width: 1rem;
+}
+
+.btn-criar-conta {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease;
+  text-decoration: none;
+}
+
+.btn-criar-conta:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+}
+
+.btn-criar-conta img {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-criar-conta:hover img {
+  transform: translateX(4px);
+}
+
+footer {
+  background-color: var(--color-neutral-darkest);
+  color: var(--color-neutral-light-white);
+  margin-top: 2rem;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  width: 90%;
+  padding: 3rem 0;
+  margin: 0 auto;
+}
+
+.footer-content .section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+footer .logo div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+footer .logo div img {
+  width: 26px;
+  height: 26px;
+}
+
+footer .logo div p {
+  font-size: 0.9rem;
+  width: 70%;
+}
+
+footer .menu-nav ul {
+  list-style-position: inside;
+  padding: 0;
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+footer .menu-nav ul a {
+  color: var(--color-neutral-light-white);
+  font-size: 0.9rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+  display: inline-block;
+}
+
+footer .menu-nav ul a:hover {
+  color: var(--color-secondary-medium);
+  transform: translateX(4px);
+}
+
+footer .contato div img {
+  width: 26px;
+  height: 26px;
+}
+
+footer .contato div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.footer-copyright {
+  border-top: 1px solid var(--color-neutral-light-white);
+  padding: 1.5rem 0;
+}
+
+.footer-copyright p {
+  font-size: 0.85rem;
+  width: 90%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* ============================================
+   NAV LINKS — underline animado
+   ============================================ */
+
+.menu-nav nav ul a {
+  position: relative;
+  text-decoration: none;
+}
+
+.menu-nav nav ul a::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background-color: var(--color-primary-medium);
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.menu-nav nav ul a:hover::after {
+  width: 100%;
+}
+
+/* ============================================
+   SCROLL REVEAL
+   ============================================ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.reveal--visivel {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal--delay-1 { transition-delay: 0.1s; }
+.reveal--delay-2 { transition-delay: 0.2s; }
+.reveal--delay-3 { transition-delay: 0.3s; }
+.reveal--delay-4 { transition-delay: 0.4s; }
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .card,
+  .servico-card,
+  .btn-criar-conta,
+  .star-icon,
+  .como-funciona .banner div,
+  .como-funciona > div > img {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  header {
+    width: 90%;
+    height: 6rem;
+    padding: 0 1.5rem;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  header .logo {
+    font-size: 1.35rem;
+  }
+
+  .menu-nav {
+    display: block;
+  }
+
+  .menu-nav nav ul {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    list-style: none;
+    padding: 0;
+  }
+
+  .menu-nav nav ul a {
+    color: var(--color-neutral-dark);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .menu-login {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .btn-entrar {
+    font-size: 0.95rem;
+  }
+
+  .btn-cadastrar {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .hamburger {
+    display: none;
+  }
+
+  main {
+    padding: 0;
+  }
+
+  .criar-conta {
+    border-radius: 24px;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 1.5rem auto;
+    padding: 3rem 3rem;
+    width: 90%;
+  }
+
+  .criar-conta .left-content {
+    width: 60%;
+    gap: 2rem;
+  }
+
+  .criar-conta .left-content h1 {
+    font-size: 2rem;
+    width: 90%;
+  }
+
+  .criar-conta .left-content p {
+    font-size: 1.1rem;
+    width: 85%;
+  }
+
+  .criar-conta .left-content .btn-criar-conta {
+    font-size: 1.1rem;
+    padding: 0.85rem 1.75rem;
+    border-radius: 24px;
+  }
+
+  .criar-conta .left-content .btn-criar-conta img {
+    width: 1.1rem;
+  }
+
+  .criar-conta .right-content {
+    width: 38%;
+    max-width: none;
+  }
+
+  .sobre .content {
+    width: 90%;
+    gap: 3rem;
+  }
+
+  .sobre h1 {
+    font-size: 2rem;
+  }
+
+  .sobre p {
+    font-size: 1.1rem;
+  }
+
+  .cards {
+    flex-direction: row;
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  .card {
+    height: 12rem;
+    padding: 1.5rem;
+  }
+
+  .card-verde .card-icone {
+    bottom: -60px;
+  }
+
+  .card-amarelo .card-icone {
+    bottom: -25px;
+  }
+
+  .card-cinza .card-icone {
+    bottom: -50px;
+  }
+
+  .card-texto h3 {
+    font-size: 1.35rem;
+  }
+
+  .card-texto p {
+    font-size: 1rem;
+  }
+
+  .para-quem {
+    width: 90%;
+    padding: 5rem 0;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .para-quem h1 {
+    font-size: 2rem;
+    max-width: 220px;
+  }
+
+  .para-quem>div {
+    width: auto;
+  }
+
+  .para-quem div div.icon,
+  .para-quem>div>div:first-child {
+    width: 100px;
+    height: 100px;
+  }
+
+  .para-quem .icon img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .para-quem .title {
+    font-size: 1.2rem;
+  }
+
+  .para-quem .text {
+    font-size: 0.95rem;
+    max-width: 200px;
+  }
+
+  .como-funciona {
+    gap: 3rem;
+  }
+
+  .como-funciona-title {
+    padding: 1.75rem 0;
+  }
+
+  .como-funciona-titulo {
+    font-size: 2rem;
+  }
+
+  .como-funciona-passo {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 3rem;
+    width: 90%;
+  }
+
+  .como-funciona-passo-invertido {
+    flex-direction: row;
+  }
+
+  .como-funciona-numero {
+    font-size: 4.5rem;
+  }
+
+  .como-funciona-icone-wrapper {
+    width: 68px;
+    height: 68px;
+  }
+
+  .como-funciona-icone {
+    width: 44px;
+    height: 44px;
+  }
+
+  .como-funciona-subtitulo {
+    font-size: 1.25rem;
+  }
+
+  .como-funciona-descricao {
+    font-size: 1.1rem;
+  }
+
+  .como-funciona-imagem-wrapper {
+    height: 18rem;
+    max-width: 28rem;
+  }
+
+  .como-funciona .banner {
+    width: 90%;
+    padding: 3rem;
+    gap: 3rem;
+    margin: 3rem 0;
+  }
+
+  .como-funciona .banner h1 {
+    font-size: 2rem;
+  }
+
+  .como-funciona .banner p {
+    font-size: 1.2rem;
+    width: 85%;
+  }
+
+  .como-funciona .banner div {
+    width: 9.5rem;
+    height: 9.5rem;
+  }
+
+  .como-funciona .banner div img {
+    width: 9.5rem;
+    height: 9.5rem;
+  }
+
+  .servicos {
+    padding: 5rem 0;
+    gap: 2.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .servicos-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .servicos-header p {
+    font-size: 1.1rem;
+  }
+
+  .servicos-grid {
+    gap: 1.25rem;
+    width: 90%;
+  }
+
+  .servicos-linha {
+    gap: 1.25rem;
+    height: 22vw;
+    min-height: 130px;
+  }
+
+  .servicos-linha--desktop {
+    display: flex;
+    gap: 1.25rem;
+    height: 22vw;
+    min-height: 130px;
+  }
+
+  .servicos-linha--mobile {
+    display: none;
+  }
+
+  .servico-card {
+    border-radius: 18px;
+  }
+
+  .servico-card span {
+    font-size: 1rem;
+  }
+
+  .comece-agora {
+    gap: 3rem;
+    padding: 4rem 3rem;
+  }
+
+  .comece-agora h1 {
+    font-size: 2rem;
+  }
+
+  .comece-agora p {
+    font-size: 1.2rem;
+  }
+
+  .comece-agora .btn-criar-conta {
+    font-size: 1.35rem;
+    padding: 0.9rem 1.75rem;
+  }
+
+  .comece-agora .btn-criar-conta img {
+    width: 1.2rem;
+  }
+
+  footer {
+    margin-top: 0;
+  }
+
+  .footer-content {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 3rem;
+    width: 90%;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+  }
+
+  .footer-content .section {
+    width: 33%;
+  }
+
+  .footer-copyright p {
+    text-align: left;
+  }
+}
+
+@media (min-width: 1536px) {
+  header {
+    width: 80%;
+    height: 7rem;
+    padding: 0 2rem;
+  }
+
+  header .logo {
+    font-size: 1.5rem;
+  }
+
+  .menu-nav nav ul {
+    gap: 3rem;
+  }
+
+  .menu-nav nav ul a {
+    font-size: 1.2rem;
+  }
+
+  .menu-login {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .btn-entrar {
+    font-size: 1.2rem;
+  }
+
+  .btn-cadastrar {
+    padding: 1rem 1.5rem;
+    font-size: 1.2rem;
+  }
+
+  .criar-conta {
+    margin: 2rem auto;
+    padding: 6rem 6rem;
+    width: 80%;
+  }
+
+  .criar-conta .left-content {
+    gap: 3rem;
+  }
+
+  .criar-conta .left-content h1 {
+    font-size: 3.5rem;
+    width: 70%;
+  }
+
+  .criar-conta .left-content p {
+    font-size: 2rem;
+    width: 70%;
+  }
+
+  .criar-conta .left-content .btn-criar-conta {
+    font-size: 2rem;
+    padding: 1rem 2rem;
+    border-radius: 24px;
+  }
+
+  .criar-conta .left-content .btn-criar-conta img {
+    width: 1.5rem;
+  }
+
+  .sobre .content {
+    width: 80%;
+    gap: 5rem;
+  }
+
+  .sobre h1 {
+    font-size: 2.5rem;
+  }
+
+  .sobre p {
+    font-size: 1.2rem;
+  }
+
+  .cards {
+    gap: 4rem;
+  }
+
+  .card {
+    width: 22rem;
+    height: 15rem;
+    padding: 2rem;
+  }
+
+  .card-texto h3 {
+    font-size: 1.5rem;
+  }
+
+  .card-texto p {
+    font-size: 1.1rem;
+  }
+
+  .card-verde .card-icone img {
+    width: 300px;
+    height: 300px;
+  }
+
+  .card-verde .card-icone {
+    right: -100px;
+    bottom: -40px;
+  }
+
+  .card-cinza .card-icone img {
+    width: 280px;
+    height: 280px;
+  }
+
+  .card-cinza .card-icone {
+    right: -110px;
+    bottom: -40px;
+  }
+
+  .card-amarelo .card-icone img {
+    width: 240px;
+    height: 240px;
+  }
+
+  .card-amarelo .card-icone {
+    right: -70px;
+    bottom: -20px;
+  }
+
+  .para-quem {
+    width: 80%;
+    padding: 8rem 0;
+  }
+
+  .para-quem h1 {
+    font-size: 2.5rem;
+    max-width: 300px;
+  }
+
+  .para-quem div div.icon,
+  .para-quem>div>div:first-child {
+    width: 120px;
+    height: 120px;
+  }
+
+  .para-quem .icon img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .para-quem .title {
+    font-size: 1.5rem;
+  }
+
+  .para-quem .text {
+    font-size: 1rem;
+    max-width: 70%;
+  }
+
+  .como-funciona {
+    gap: 4rem;
+  }
+
+  .como-funciona-titulo {
+    font-size: 2.5rem;
+  }
+
+  .como-funciona-passo {
+    gap: 4rem;
+    max-width: 80%;
+    width: auto;
+  }
+
+  .como-funciona-numero {
+    font-size: 5rem;
+  }
+
+  .como-funciona-icone-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+  }
+
+  .como-funciona-icone {
+    width: 50px;
+    height: 50px;
+  }
+
+  .como-funciona-subtitulo {
+    font-size: 1.5rem;
+  }
+
+  .como-funciona-descricao {
+    font-size: 1.2rem;
+  }
+
+  .como-funciona-imagem-wrapper {
+    height: 22rem;
+    max-width: 35rem;
+    padding: 1.5rem;
+  }
+
+  .como-funciona .banner {
+    width: 80%;
+    gap: 4rem;
+    padding: 4rem;
+    margin: 4rem 0;
+  }
+
+  .como-funciona .banner h1 {
+    font-size: 2.5rem;
+  }
+
+  .como-funciona .banner p {
+    font-size: 1.5rem;
+    width: 80%;
+  }
+
+  .como-funciona .banner div {
+    width: 11rem;
+    height: 11rem;
+  }
+
+  .como-funciona .banner div img {
+    width: 11rem;
+    height: 11rem;
+  }
+
+  .servicos {
+    padding: 8rem 0;
+    gap: 3rem;
+    margin-bottom: 4rem;
+  }
+
+  .servicos-header h1 {
+    font-size: 2rem;
+  }
+
+  .servicos-header p {
+    font-size: 1.3rem;
+  }
+
+  .servicos-grid {
+    gap: 2rem;
+    width: 80%;
+  }
+
+  .servicos-linha {
+    gap: 2rem;
+    height: 18vw;
+    min-height: 160px;
+  }
+
+  .servico-card {
+    border-radius: 22px;
+  }
+
+  .servico-card span {
+    font-size: 1.3rem;
+  }
+
+  .comece-agora {
+    gap: 4rem;
+    padding: 6rem;
+  }
+
+  .comece-agora h1 {
+    font-size: 2.5rem;
+  }
+
+  .comece-agora p {
+    font-size: 1.5rem;
+  }
+
+  .comece-agora .btn-criar-conta {
+    font-size: 2rem;
+    padding: 1rem 2rem;
+  }
+
+  .comece-agora .btn-criar-conta img {
+    width: 1.5rem;
+  }
+
+  .footer-content {
+    gap: 4rem;
+    width: 80%;
+    padding: 4rem 0;
+    margin-bottom: 4rem;
+  }
+
+  footer .logo div img {
+    width: 30px;
+    height: 30px;
+  }
+
+  footer .logo div p {
+    font-size: 1rem;
+    width: 50%;
+  }
+
+  footer .menu-nav ul a {
+    font-size: 1rem;
+  }
+
+  footer .contato div img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .footer-copyright p {
+    font-size: 1rem;
+    width: 80%;
+  }
 }
 </style>
