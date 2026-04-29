@@ -1395,10 +1395,6 @@ footer .contato div {
   text-align: center;
 }
 
-/* ============================================
-   NAV LINKS — underline animado
-   ============================================ */
-
 .menu-nav nav ul a {
   position: relative;
   text-decoration: none;
@@ -1419,10 +1415,6 @@ footer .contato div {
 .menu-nav nav ul a:hover::after {
   width: 100%;
 }
-
-/* ============================================
-   SCROLL REVEAL
-   ============================================ */
 
 .reveal {
   opacity: 0;
@@ -1451,10 +1443,6 @@ footer .contato div {
 .reveal--delay-4 {
   transition-delay: 0.4s;
 }
-
-/* ============================================
-   REDUCED MOTION
-   ============================================ */
 
 @media (prefers-reduced-motion: reduce) {
   .reveal {
