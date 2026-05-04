@@ -57,9 +57,9 @@ onMounted(() => {
     </div>
 
     <button class="hamburger" :class="{ 'hamburger--ativo': menuAberto }" @click="toggleMenu" aria-label="Abrir menu">
-      <span class="hamburger__linha"></span>
-      <span class="hamburger__linha"></span>
-      <span class="hamburger__linha"></span>
+      <span class="hamburger-linha"></span>
+      <span class="hamburger-linha"></span>
+      <span class="hamburger-linha"></span>
     </button>
   </header>
 
@@ -80,16 +80,16 @@ onMounted(() => {
 
       <nav class="drawer-nav">
         <a href="#sobre" class="drawer-link" @click="fecharMenu">
-          <span class="drawer-link__num">01</span>
-          <span class="drawer-link__texto">Sobre</span>
+          <span class="drawer-link-num">01</span>
+          <span class="drawer-link-texto">Sobre</span>
         </a>
         <a href="#como-funciona" class="drawer-link" @click="fecharMenu">
-          <span class="drawer-link__num">02</span>
-          <span class="drawer-link__texto">Como funciona</span>
+          <span class="drawer-link-num">02</span>
+          <span class="drawer-link-texto">Como funciona</span>
         </a>
         <a href="#servicos" class="drawer-link" @click="fecharMenu">
-          <span class="drawer-link__num">03</span>
-          <span class="drawer-link__texto">Serviços</span>
+          <span class="drawer-link-num">03</span>
+          <span class="drawer-link-texto">Serviços</span>
         </a>
       </nav>
 
@@ -440,7 +440,7 @@ header .logo {
   transform: scale(1.05);
 }
 
-.hamburger__linha {
+.hamburger-linha {
   display: block;
   width: 20px;
   height: 2px;
@@ -452,16 +452,16 @@ header .logo {
   transform-origin: center;
 }
 
-.hamburger--ativo .hamburger__linha:nth-child(1) {
+.hamburger--ativo .hamburger-linha:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
 }
 
-.hamburger--ativo .hamburger__linha:nth-child(2) {
+.hamburger--ativo .hamburger-linha:nth-child(2) {
   opacity: 0;
   transform: scaleX(0);
 }
 
-.hamburger--ativo .hamburger__linha:nth-child(3) {
+.hamburger--ativo .hamburger-linha:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);
 }
 
@@ -586,10 +586,10 @@ header .logo {
   opacity: 1;
 }
 
-.drawer-link:hover .drawer-link__num,
-.drawer-link:hover .drawer-link__texto,
-.drawer-link:active .drawer-link__num,
-.drawer-link:active .drawer-link__texto {
+.drawer-link:hover .drawer-link-num,
+.drawer-link:hover .drawer-link-texto,
+.drawer-link:active .drawer-link-num,
+.drawer-link:active .drawer-link-texto {
   color: #ffffff;
 }
 
@@ -597,7 +597,7 @@ header .logo {
   transform: scale(0.97);
 }
 
-.drawer-link__num {
+.drawer-link-num {
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--color-primary-medium);
@@ -608,7 +608,7 @@ header .logo {
   transition: color 0.2s ease;
 }
 
-.drawer-link__texto {
+.drawer-link-texto {
   font-size: 1.05rem;
   font-weight: 600;
   position: relative;
@@ -1802,154 +1802,152 @@ footer .contato div {
   }
 }
 
-@media (min-width: 1536px) {
+@media (min-width: 1280px) {
   header {
-    width: 80%;
-    height: 7rem;
-    padding: 0 2rem;
+    width: 85%;
+    height: 6.5rem;
+    padding: 0 1.75rem;
   }
 
   header .logo {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 
   .menu-nav nav ul {
-    gap: 3rem;
-  }
-
-  .menu-nav nav ul a {
-    font-size: 1.2rem;
-  }
-
-  .menu-login {
-    display: flex;
-    align-items: center;
     gap: 2rem;
   }
 
+  .menu-nav nav ul a {
+    font-size: 1rem;
+  }
+
+  .menu-login {
+    gap: 1.25rem;
+  }
+
   .btn-entrar {
-    font-size: 1.2rem;
+    font-size: 1rem;
   }
 
   .btn-cadastrar {
-    padding: 1rem 1.5rem;
-    font-size: 1.2rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
   }
 
   .criar-conta {
-    margin: 2rem auto;
-    padding: 6rem 6rem;
-    width: 80%;
+    margin: 1.5rem auto;
+    padding: 4rem;
+    width: 85%;
   }
 
   .criar-conta .left-content {
-    gap: 3rem;
+    gap: 2rem;
   }
 
   .criar-conta .left-content h1 {
-    font-size: 3.5rem;
-    width: 70%;
+    font-size: 2.5rem;
+    width: 80%;
   }
 
   .criar-conta .left-content p {
-    font-size: 2rem;
-    width: 70%;
+    font-size: 1.4rem;
+    width: 80%;
   }
 
   .criar-conta .left-content .btn-criar-conta {
-    font-size: 2rem;
-    padding: 1rem 2rem;
+    font-size: 1.35rem;
+    padding: 0.85rem 1.75rem;
     border-radius: 24px;
   }
 
   .criar-conta .left-content .btn-criar-conta img {
-    width: 1.5rem;
+    width: 1.2rem;
   }
 
   .sobre .content {
-    width: 80%;
-    gap: 5rem;
+    width: 85%;
+    gap: 3.5rem;
   }
 
   .sobre h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .sobre p {
-    font-size: 1.2rem;
-  }
-
-  .cards {
-    gap: 4rem;
-  }
-
-  .card {
-    width: 22rem;
-    height: 15rem;
-    padding: 2rem;
-  }
-
-  .card-texto h3 {
-    font-size: 1.5rem;
-  }
-
-  .card-texto p {
     font-size: 1.1rem;
   }
 
+  .cards {
+    gap: 2.5rem;
+  }
+
+  .card {
+    width: 18rem;
+    height: 13rem;
+    padding: 1.75rem;
+  }
+
+  .card-texto h3 {
+    font-size: 1.35rem;
+  }
+
+  .card-texto p {
+    font-size: 1rem;
+  }
+
   .card-verde .card-icone img {
-    width: 300px;
-    height: 300px;
-  }
-
-  .card-verde .card-icone {
-    right: -100px;
-    bottom: -40px;
-  }
-
-  .card-cinza .card-icone img {
-    width: 280px;
-    height: 280px;
-  }
-
-  .card-cinza .card-icone {
-    right: -110px;
-    bottom: -40px;
-  }
-
-  .card-amarelo .card-icone img {
     width: 240px;
     height: 240px;
   }
 
+  .card-verde .card-icone {
+    right: -80px;
+    bottom: -35px;
+  }
+
+  .card-cinza .card-icone img {
+    width: 220px;
+    height: 220px;
+  }
+
+  .card-cinza .card-icone {
+    right: -85px;
+    bottom: -35px;
+  }
+
+  .card-amarelo .card-icone img {
+    width: 190px;
+    height: 190px;
+  }
+
   .card-amarelo .card-icone {
-    right: -70px;
+    right: -55px;
     bottom: -20px;
   }
 
   .para-quem {
-    width: 80%;
-    padding: 8rem 0;
+    width: 85%;
+    padding: 5rem 0;
   }
 
   .para-quem h1 {
-    font-size: 2.5rem;
-    max-width: 300px;
+    font-size: 2rem;
+    max-width: 250px;
   }
 
   .para-quem div div.icon,
   .para-quem>div>div:first-child {
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
   }
 
   .para-quem .icon img {
-    width: 70px;
-    height: 70px;
+    width: 62px;
+    height: 62px;
   }
 
   .para-quem .title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .para-quem .text {
@@ -1958,139 +1956,139 @@ footer .contato div {
   }
 
   .como-funciona {
-    gap: 4rem;
+    gap: 3rem;
   }
 
   .como-funciona-titulo {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .como-funciona-passo {
-    gap: 4rem;
-    max-width: 80%;
+    gap: 3rem;
+    max-width: 85%;
     width: auto;
   }
 
   .como-funciona-numero {
-    font-size: 5rem;
+    font-size: 4.5rem;
   }
 
   .como-funciona-icone-wrapper {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     border-radius: 16px;
   }
 
   .como-funciona-icone {
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
   }
 
   .como-funciona-subtitulo {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .como-funciona-descricao {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 
   .como-funciona-imagem-wrapper {
-    height: 22rem;
-    max-width: 35rem;
-    padding: 1.5rem;
+    height: 18rem;
+    max-width: 30rem;
+    padding: 1.25rem;
   }
 
   .como-funciona .banner {
-    width: 80%;
-    gap: 4rem;
-    padding: 4rem;
-    margin: 4rem 0;
+    width: 85%;
+    gap: 3rem;
+    padding: 3rem;
+    margin: 3rem 0;
   }
 
   .como-funciona .banner h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .como-funciona .banner p {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     width: 80%;
   }
 
   .como-funciona .banner div {
-    width: 11rem;
-    height: 11rem;
+    width: 9.5rem;
+    height: 9.5rem;
   }
 
   .como-funciona .banner div img {
-    width: 11rem;
-    height: 11rem;
+    width: 9.5rem;
+    height: 9.5rem;
   }
 
   .servicos {
-    padding: 8rem 0;
-    gap: 3rem;
-    margin-bottom: 4rem;
+    padding: 5rem 0;
+    gap: 2.5rem;
+    margin-bottom: 3rem;
   }
 
   .servicos-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   .servicos-header p {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
   }
 
   .servicos-grid {
-    gap: 2rem;
-    width: 80%;
+    gap: 1.5rem;
+    width: 85%;
   }
 
   .servicos-linha {
-    gap: 2rem;
+    gap: 1.5rem;
     height: 18vw;
-    min-height: 160px;
+    min-height: 140px;
   }
 
   .servico-card {
-    border-radius: 22px;
+    border-radius: 20px;
   }
 
   .servico-card span {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
   }
 
   .comece-agora {
-    gap: 4rem;
-    padding: 6rem;
+    gap: 3rem;
+    padding: 4rem;
   }
 
   .comece-agora h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .comece-agora p {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
 
   .comece-agora .btn-criar-conta {
-    font-size: 2rem;
-    padding: 1rem 2rem;
+    font-size: 1.5rem;
+    padding: 0.9rem 1.75rem;
   }
 
   .comece-agora .btn-criar-conta img {
-    width: 1.5rem;
+    width: 1.2rem;
   }
 
   .footer-content {
-    gap: 4rem;
-    width: 80%;
-    padding: 4rem 0;
-    margin-bottom: 4rem;
+    gap: 3rem;
+    width: 85%;
+    padding: 3rem 0;
+    margin-bottom: 3rem;
   }
 
   footer .logo div img {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
   }
 
   footer .logo div p {
@@ -2103,13 +2101,13 @@ footer .contato div {
   }
 
   footer .contato div img {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
   }
 
   .footer-copyright p {
     font-size: 1rem;
-    width: 80%;
+    width: 85%;
   }
 }
 </style>
