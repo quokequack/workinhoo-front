@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import LoginSidebar from '@/components/login/LoginSidebar.vue'
+import api from '@/services/api'
+
+const router = useRouter()
 
 const form = reactive({ email: '', senha: '' })
 const senhaVisivel = ref(false)
 const enviado = ref(false)
 const agitando = ref(false)
 const carregando = ref(false)
+const erroServidor = ref('')
 
 const emailValido = computed(() =>
   form.email.includes('@') && form.email.includes('.')
@@ -22,14 +27,39 @@ function validar() {
 
 async function handleEntrar() {
   enviado.value = true
+  erroServidor.value = ''
+
   if (!validar()) {
     agitando.value = true
     setTimeout(() => (agitando.value = false), 500)
     return
   }
+
   carregando.value = true
-  console.log('Entrar:', form)
-  carregando.value = false
+  try {
+    await api.get('/sanctum/csrf-cookie')
+
+    const { data } = await api.post('/api/auth/login', {
+      credencial: form.email,
+      senha: form.senha,
+    })
+
+    router.push('/')
+  } catch (err: any) {
+    const status = err.response?.status
+    if (status === 422) {
+      const mensagem = err.response?.data?.errors?.credencial?.[0]
+      erroServidor.value = mensagem ?? 'Email ou senha incorretos.'
+    } else if (status === 401) {
+      erroServidor.value = 'Sessão expirada. Faça login novamente.'
+    } else {
+      erroServidor.value = 'Erro ao conectar com o servidor. Tente novamente.'
+    }
+    agitando.value = true
+    setTimeout(() => (agitando.value = false), 500)
+  } finally {
+    carregando.value = false
+  }
 }
 </script>
 
@@ -95,6 +125,16 @@ async function handleEntrar() {
             <router-link to="/recuperar-senha" class="link-esqueceu">Esqueceu sua senha?</router-link>
           </div>
 
+          <Transition name="erro-servidor">
+            <p v-if="erroServidor" class="erro-servidor-texto">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+              {{ erroServidor }}
+            </p>
+          </Transition>
+
           <div class="form-acoes">
             <button type="submit" class="btn-primario btn-bloco" :disabled="carregando">
               <span v-if="!carregando">Entrar</span>
@@ -126,6 +166,7 @@ async function handleEntrar() {
 .entrar-pagina {
   display: flex;
   min-height: 100dvh;
+  background-color: var(--color-primary-medium);
 }
 
 .entrar-main {
@@ -405,6 +446,36 @@ async function handleEntrar() {
   text-underline-offset: 2px;
 }
 
+.erro-servidor-texto {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-error-dark);
+  background: rgba(255, 97, 109, 0.08);
+  border: 1px solid rgba(255, 97, 109, 0.25);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+
+.erro-servidor-enter-active {
+  transition: opacity 0.22s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.erro-servidor-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.erro-servidor-enter-from {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.erro-servidor-leave-to {
+  opacity: 0;
+}
+
 .form-acoes {
   margin-top: 0.25rem;
 }
@@ -520,6 +591,11 @@ async function handleEntrar() {
 @media (min-width: 768px) {
   .form-container {
     padding: 2rem 5rem;
+  }
+
+  .entrar-main {
+    border-top-left-radius: 24px;
+    border-bottom-left-radius: 24px;
   }
 }
 </style>
