@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
+import AppHeader from '@/components/home/AppHeader.vue'
+import AppFooter from '@/components/home/AppFooter.vue'
 import pintorImg from '@/assets/images/pintor.jpg'
 import eletristaImg from '@/assets/images/eletricista.jpg'
 import daristaImg from '@/assets/images/diarista.jpg'
@@ -7,16 +9,6 @@ import mecanicoImg from '@/assets/images/mecanico.jpg'
 import tatuadorImg from '@/assets/images/tatuador.jpg'
 import encanadorImg from '@/assets/images/encanador.jpg'
 import pedreiroImg from '@/assets/images/pedreiro.jpg'
-
-const menuAberto = ref(false)
-
-function toggleMenu() {
-  menuAberto.value = !menuAberto.value
-}
-
-function fecharMenu() {
-  menuAberto.value = false
-}
 
 onMounted(() => {
   const observer = new IntersectionObserver(
@@ -36,69 +28,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <header>
-    <div class="logo">
-      <h1>Workinhoo</h1>
-    </div>
-
-    <div class="menu-nav">
-      <nav>
-        <ul>
-          <li><a href="#sobre">Sobre</a></li>
-          <li><a href="#como-funciona">Como funciona</a></li>
-          <li><a href="#servicos">Serviços</a></li>
-        </ul>
-      </nav>
-    </div>
-
-    <div class="menu-login">
-      <router-link to="/entrar" class="btn-entrar">Entrar</router-link>
-      <router-link to="/cadastrar" class="btn-cadastrar">Cadastrar</router-link>
-    </div>
-
-    <button class="hamburger" :class="{ 'hamburger--ativo': menuAberto }" @click="toggleMenu" aria-label="Abrir menu">
-      <span class="hamburger-linha"></span>
-      <span class="hamburger-linha"></span>
-      <span class="hamburger-linha"></span>
-    </button>
-  </header>
-
-  <Transition name="overlay">
-    <div v-if="menuAberto" class="menu-overlay" @click="fecharMenu"></div>
-  </Transition>
-
-  <Transition name="drawer">
-    <div v-if="menuAberto" class="menu-drawer">
-      <div class="drawer-logo">
-        <h2>Workinhoo</h2>
-        <button class="drawer-fechar" @click="fecharMenu" aria-label="Fechar menu">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
-          </svg>
-        </button>
-      </div>
-
-      <nav class="drawer-nav">
-        <a href="#sobre" class="drawer-link" @click="fecharMenu">
-          <span class="drawer-link-num">01</span>
-          <span class="drawer-link-texto">Sobre</span>
-        </a>
-        <a href="#como-funciona" class="drawer-link" @click="fecharMenu">
-          <span class="drawer-link-num">02</span>
-          <span class="drawer-link-texto">Como funciona</span>
-        </a>
-        <a href="#servicos" class="drawer-link" @click="fecharMenu">
-          <span class="drawer-link-num">03</span>
-          <span class="drawer-link-texto">Serviços</span>
-        </a>
-      </nav>
-
-      <div class="drawer-acoes">
-        <router-link to="/entrar" class="drawer-btn-entrar" @click="fecharMenu">Entrar</router-link>
-        <router-link to="/cadastrar" class="drawer-btn-cadastrar" @click="fecharMenu">Cadastrar</router-link>
-      </div>
-    </div>
-  </Transition>
+  <AppHeader />
 
   <main>
     <section class="criar-conta">
@@ -323,39 +253,7 @@ onMounted(() => {
     </section>
   </main>
 
-  <footer>
-    <div class="footer-content">
-      <div class="logo section reveal">
-        <h1>Workinhoo</h1>
-        <div>
-          <img src="@/assets/icons/toolbox.svg" alt="ícone de caixa de ferramentas" />
-          <p>Conectando você a profissionais locais</p>
-        </div>
-      </div>
-
-      <div class="menu-nav section reveal reveal--delay-1">
-        <h1>Links rápidos</h1>
-        <ul>
-          <li><a href="#sobre">Sobre</a></li>
-          <li><a href="#como-funciona">Como funciona</a></li>
-          <li><a href="#servicos">Serviços</a></li>
-          <li><router-link to="/entrar">Entrar</router-link></li>
-          <li><router-link to="/cadastrar">Cadastrar</router-link></li>
-        </ul>
-      </div>
-
-      <div class="contato section reveal reveal--delay-2">
-        <h1>Contato</h1>
-        <div>
-          <img src="@/assets/icons/mail.svg" alt="ícone de e-mail" />
-          <p>workinhoo@gmail.com</p>
-        </div>
-      </div>
-    </div>
-    <div class="footer-copyright">
-      <p>© 2026 Workinhoo. Todos os direitos reservados.</p>
-    </div>
-  </footer>
+  <AppFooter />
 </template>
 
 <style scoped>
@@ -1310,112 +1208,6 @@ main {
   transform: translateX(4px);
 }
 
-footer {
-  background-color: var(--color-neutral-darkest);
-  color: var(--color-neutral-light-white);
-  margin-top: 2rem;
-}
-
-.footer-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  width: 90%;
-  padding: 3rem 0;
-  margin: 0 auto;
-}
-
-.footer-content .section {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-footer .logo div {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.75rem;
-}
-
-footer .logo div img {
-  width: 26px;
-  height: 26px;
-}
-
-footer .logo div p {
-  font-size: 0.9rem;
-  width: 70%;
-}
-
-footer .menu-nav ul {
-  list-style-position: inside;
-  padding: 0;
-  margin-top: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-footer .menu-nav ul a {
-  color: var(--color-neutral-light-white);
-  font-size: 0.9rem;
-  transition: color 0.2s ease, transform 0.2s ease;
-  display: inline-block;
-}
-
-footer .menu-nav ul a:hover {
-  color: var(--color-secondary-medium);
-  transform: translateX(4px);
-}
-
-footer .contato div img {
-  width: 26px;
-  height: 26px;
-}
-
-footer .contato div {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.75rem;
-}
-
-.footer-copyright {
-  border-top: 1px solid var(--color-neutral-light-white);
-  padding: 1.5rem 0;
-}
-
-.footer-copyright p {
-  font-size: 0.85rem;
-  width: 90%;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.menu-nav nav ul a {
-  position: relative;
-  text-decoration: none;
-}
-
-.menu-nav nav ul a::after {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  left: 0;
-  width: 0%;
-  height: 2px;
-  background-color: var(--color-primary-medium);
-  border-radius: 2px;
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.menu-nav nav ul a:hover::after {
-  width: 100%;
-}
-
 .reveal {
   opacity: 0;
   transform: translateY(32px);
@@ -1779,27 +1571,6 @@ footer .contato div {
   .comece-agora .btn-criar-conta img {
     width: 1.2rem;
   }
-
-  footer {
-    margin-top: 0;
-  }
-
-  .footer-content {
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 3rem;
-    width: 90%;
-    padding: 3rem 0;
-    margin-bottom: 2rem;
-  }
-
-  .footer-content .section {
-    width: 33%;
-  }
-
-  .footer-copyright p {
-    text-align: left;
-  }
 }
 
 @media (min-width: 1280px) {
@@ -2077,37 +1848,6 @@ footer .contato div {
 
   .comece-agora .btn-criar-conta img {
     width: 1.2rem;
-  }
-
-  .footer-content {
-    gap: 3rem;
-    width: 85%;
-    padding: 3rem 0;
-    margin-bottom: 3rem;
-  }
-
-  footer .logo div img {
-    width: 28px;
-    height: 28px;
-  }
-
-  footer .logo div p {
-    font-size: 1rem;
-    width: 50%;
-  }
-
-  footer .menu-nav ul a {
-    font-size: 1rem;
-  }
-
-  footer .contato div img {
-    width: 28px;
-    height: 28px;
-  }
-
-  .footer-copyright p {
-    font-size: 1rem;
-    width: 85%;
   }
 }
 </style>
