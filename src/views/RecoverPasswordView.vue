@@ -302,6 +302,7 @@ function irParaLogin() {
 .recover-pagina {
   display: flex;
   min-height: 100dvh;
+  background-color: var(--color-primary-medium);
 }
 
 .recover-main {
@@ -743,6 +744,11 @@ function irParaLogin() {
 @media (min-width: 768px) {
   .form-container {
     padding: 2rem 5rem;
+  }
+
+  .recover-main {
+    border-top-left-radius: 24px;
+    border-bottom-left-radius: 24px;
   }
 }
 </style>
