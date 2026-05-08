@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import RecoverSidebar from '@/components/recover/RecoverSidebar.vue'
+import AppSidebar from '@/components/shared/AppSidebar.vue'
 import RecoverStepIndicator from '@/components/recover/RecoverStepIndicator.vue'
 import VerifyCodeModal from '@/components/recover/VerifyCodeModal.vue'
 import ResetSuccessModal from '@/components/recover/ResetSuccessModal.vue'
@@ -107,7 +107,10 @@ function irParaLogin() {
 
 <template>
   <div class="recover-pagina">
-    <RecoverSidebar />
+    <AppSidebar titulo="Recupere sua conta" subtitulo="Siga os passos para redefinir sua senha."
+      imagem="recover-illustration.svg" imagem-alt="Ilustração de recuperação de senha" btn-label="Voltar"
+      btn-to="/entrar" btn-icone="back.svg" :btn-animate="true" header-texto="Não tem conta?" link-label="Cadastrar"
+      link-to="/cadastrar" />
 
     <main class="recover-main">
       <div class="mobile-banner">
