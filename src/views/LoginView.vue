@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import LoginSidebar from '@/components/login/LoginSidebar.vue'
+import AppSidebar from '@/components/shared/AppSidebar.vue'
 import api from '@/services/api'
 
 const router = useRouter()
@@ -39,7 +39,7 @@ async function handleEntrar() {
   try {
     await api.get('/sanctum/csrf-cookie')
 
-    const { data } = await api.post('/api/auth/login', {
+    await api.post('/api/auth/login', {
       credencial: form.email,
       senha: form.senha,
     })
@@ -65,7 +65,10 @@ async function handleEntrar() {
 
 <template>
   <div class="entrar-pagina">
-    <LoginSidebar />
+    <AppSidebar titulo="Acesse sua conta" subtitulo="Entre para continuar." imagem="login-illustration.svg"
+      imagem-alt="Ilustração de login" btn-label="Início" btn-to="/" header-texto="Não tem conta?"
+      link-label="Cadastrar" link-to="/cadastrar"
+      :lista="['Encontre profissionais próximos', 'Divulgue seus serviços', 'Tudo de forma simples']" />
 
     <main class="entrar-main">
       <div class="mobile-banner">
