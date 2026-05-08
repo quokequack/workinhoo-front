@@ -1,11 +1,11 @@
 <script setup lang="ts">
 defineProps<{ stepAtual: number }>()
-const rotulos = ['Dados pessoais', 'Endereço', 'Serviços']
+const rotulos = ['Dados pessoais', 'Prestação de serviços']
 </script>
 
 <template>
   <div class="step-indicador">
-    <template v-for="n in 3" :key="n">
+    <template v-for="n in 2" :key="n">
       <div class="step-item" :class="{
         'step-ativo': stepAtual === n,
         'step-concluido': stepAtual > n,
@@ -22,7 +22,7 @@ const rotulos = ['Dados pessoais', 'Endereço', 'Serviços']
         </div>
         <span class="step-rotulo">{{ rotulos[n - 1] }}</span>
       </div>
-      <div v-if="n < 3" class="step-linha" :class="{ 'step-linha-concluida': stepAtual > n }" />
+      <div v-if="n < 2" class="step-linha" :class="{ 'step-linha-concluida': stepAtual > n }" />
     </template>
   </div>
 </template>

@@ -1,111 +1,243 @@
 <script setup lang="ts">
-import { reactive, ref, nextTick } from 'vue'
+import { reactive, ref, computed, nextTick, watch, onMounted } from 'vue'
+import L, { Map, Marker } from 'leaflet'
 import SelectCustom from '@/components/register/SelectCustom.vue'
+import api from '@/services/api'
 
 interface Servicos {
-  prestador: boolean
-  servicosPrestados: string[]
-  bairrosAtendidos: string[]
-  descricao: string
-  telefoneProfissional: string
+  is_prestador: boolean
+  prestador: {
+    descricao: string
+    instagram: string | null
+    cidade_id: number | null
+    atende_cidade_toda: boolean
+    latitude: number | null
+    longitude: number | null
+    especialidades: Record<number, string[]>
+    bairros: number[]
+  } | null
 }
 
-const props = defineProps<{ dados: Servicos }>()
-const emit = defineEmits<{ cadastrar: [dados: Servicos]; voltar: [] }>()
+interface OpcaoSelect {
+  value: string | number
+  label: string
+}
 
-const form = reactive({
-  ...props.dados,
-  servicosPrestados: [...props.dados.servicosPrestados],
-  bairrosAtendidos: [...props.dados.bairrosAtendidos]
-})
+const props = defineProps<{
+  dados: Servicos
+  carregando: boolean
+  erro?: string | null
+  cidadesDisponiveis: { value: number; label: string }[]        
+  especialidadesDisponiveis: { value: string; label: string }[] 
+}>()
+const emit = defineEmits<{
+  cadastrar: [dados: Servicos]
+  voltar: []
+  atualizar: [dados: Servicos]  
+}>()
+
+const cacheBairros: Record<number, OpcaoSelect[]> = {}
+
 const enviado = ref(false)
 const agitando = ref(false)
 const entrou = ref(false)
-const tocado = reactive({ telefoneProfissional: false })
 
-const opcoes_servicos = [
-  { value: 'eletricista', label: 'Eletricista' },
-  { value: 'encanador', label: 'Encanador' },
-  { value: 'pintor', label: 'Pintor' },
-  { value: 'pedreiro', label: 'Pedreiro' },
-  { value: 'marceneiro', label: 'Marceneiro' },
-  { value: 'mecanico', label: 'Mecânico' },
-  { value: 'diarista', label: 'Diarista' },
-  { value: 'tatuador', label: 'Tatuador' },
-  { value: 'cabeleireiro', label: 'Cabeleireiro / Barbeiro' },
-  { value: 'personal-trainer', label: 'Personal Trainer' },
-  { value: 'fotografo', label: 'Fotógrafo' },
-  { value: 'professor', label: 'Professor particular' },
-  { value: 'ti', label: 'TI / Informática' },
-]
+const isPrestador = ref(props.dados.is_prestador)
 
-const opcoes_bairros = [
-  { value: 'pajucara', label: 'Pajuçara' },
-  { value: 'ponta-verde', label: 'Ponta Verde' },
-  { value: 'jatiuca', label: 'Jatiúca' },
-  { value: 'centro', label: 'Centro' },
-  { value: 'farol', label: 'Farol' },
-  { value: 'pinheiro', label: 'Pinheiro' },
-  { value: 'mangabeiras', label: 'Mangabeiras' },
-  { value: 'gruta-de-lourdes', label: 'Gruta de Lourdes' },
-  { value: 'levada', label: 'Levada' },
-  { value: 'bebedouro', label: 'Bebedouro' },
-  { value: 'poco', label: 'Poço' },
-  { value: 'feitosa', label: 'Feitosa' },
-  { value: 'benedito-bentes', label: 'Benedito Bentes' },
-  { value: 'tabuleiro', label: 'Tabuleiro' },
-  { value: 'jacintinho', label: 'Jacintinho' },
-  { value: 'clima-bom', label: 'Clima Bom' },
-]
+const especialidadesIds = ref<string[]>(
+  Object.keys(props.dados.prestador?.especialidades ?? {})
+)
 
-function formatarTelefone(digits: string): string {
-  const d = digits.slice(0, 11)
-  if (d.length > 7) return d.replace(/^(\d{2})(\d{5})(\d{1,4})$/, '($1) $2-$3')
-  if (d.length > 2) return d.replace(/^(\d{2})(\d+)$/, '($1) $2')
-  return d
+const prestadorForm = reactive({
+  descricao: props.dados.prestador?.descricao ?? '',
+  instagram: props.dados.prestador?.instagram ?? '',
+  cidade_id: props.dados.prestador?.cidade_id ?? null as number | null,
+  atende_cidade_toda: props.dados.prestador?.atende_cidade_toda ?? true,
+  latitude: props.dados.prestador?.latitude ?? null as number | null,
+  longitude: props.dados.prestador?.longitude ?? null as number | null,
+  bairros: [...(props.dados.prestador?.bairros ?? [])] as number[],
+})
+
+const opcoesCidades = computed(() => props.cidadesDisponiveis)
+const opcoesEspecialidades = computed(() => props.especialidadesDisponiveis)
+const carregandoCidades = computed(() => props.cidadesDisponiveis.length === 0)
+const carregandoEspecialidades = computed(() => props.especialidadesDisponiveis.length === 0)
+const opcoesBairros = ref<OpcaoSelect[]>([])
+const carregandoBairros = ref(false)
+let montado = false
+
+const mapaRef = ref<HTMLDivElement | null>(null)
+const mapaAberto = ref(false)
+const localizacaoSalva = ref(
+  prestadorForm.latitude !== null && prestadorForm.longitude !== null
+)
+let mapaInstance: Map | null = null
+let marcador: Marker | null = null
+
+async function carregarBairros(cidadeId: number, preservarBairros = false) {
+  if (cacheBairros[cidadeId]) {
+    opcoesBairros.value = cacheBairros[cidadeId]
+    if (!preservarBairros) prestadorForm.bairros = []
+    return
+  }
+
+  carregandoBairros.value = true
+  if (!preservarBairros) prestadorForm.bairros = []
+  try {
+    const { data } = await api.get('api/bairros', { params: { cidade: cidadeId } })
+    const opcoes = data.map((b: { id: number; nome: string }) => ({
+      value: b.id,
+      label: b.nome,
+    }))
+    cacheBairros[cidadeId] = opcoes 
+    opcoesBairros.value = opcoes
+  } catch {
+    opcoesBairros.value = []
+  } finally {
+    carregandoBairros.value = false
+  }
 }
 
-function aplicarMascara(
-  input: HTMLInputElement,
-  formatar: (digits: string) => string,
-  setter: (v: string) => void
-) {
-  const cursorAntes = input.selectionStart ?? 0
-  const digitosAntes = input.value.slice(0, cursorAntes).replace(/\D/g, '').length
+watch(() => prestadorForm.cidade_id, (id) => {
+  if (!montado) return
+  if (id !== null) carregarBairros(id)
+  else opcoesBairros.value = []
+})
 
-  const digits = input.value.replace(/\D/g, '')
-  const formatado = formatar(digits)
-  setter(formatado)
+watch(
+  [isPrestador, prestadorForm, especialidadesIds],
+  () => {
+    const especialidades: Record<number, string[]> = {}
+    especialidadesIds.value.forEach(id => {
+      especialidades[Number(id)] = []
+    })
+    emit('atualizar', {
+      is_prestador: isPrestador.value,
+      prestador: isPrestador.value ? {
+        ...prestadorForm,
+        especialidades,
+        bairros: prestadorForm.atende_cidade_toda ? [] : prestadorForm.bairros,
+      } : null,
+    })
+  },
+  { deep: true }
+)
 
-  nextTick(() => {
-    let digitosContados = 0
-    let novoCursor = 0
-    for (let i = 0; i < formatado.length; i++) {
-      const char = formatado[i] ?? ''
-      if (/\d/.test(char)) digitosContados++
-      if (digitosContados === digitosAntes) { novoCursor = i + 1; break }
-      novoCursor = i + 1
+onMounted(() => {
+  montado = true
+  if (isPrestador.value && prestadorForm.cidade_id) {
+    carregarBairros(prestadorForm.cidade_id, true)
+  }
+})
+
+async function abrirMapa() {
+  mapaAberto.value = true
+  await nextTick()
+  if (!mapaRef.value) return
+
+  const L = (await import('leaflet')).default
+  await import('leaflet/dist/leaflet.css')
+
+  if (mapaInstance) return
+
+  const lat = prestadorForm.latitude ?? -9.665
+  const lng = prestadorForm.longitude ?? -35.735
+
+  mapaInstance = L.map(mapaRef.value).setView([lat, lng], 13)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 19,
+  }).addTo(mapaInstance)
+
+  const icone = L.icon({
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+  })
+
+  if (prestadorForm.latitude !== null && prestadorForm.longitude !== null) {
+    marcador = L.marker([prestadorForm.latitude, prestadorForm.longitude], { icon: icone, draggable: true }).addTo(mapaInstance)
+    marcador.on('dragend', (e: unknown) => {
+      // @ts-ignore
+      const pos = e.target.getLatLng()
+      prestadorForm.latitude = pos.lat
+      prestadorForm.longitude = pos.lng
+    })
+  }
+
+  mapaInstance.on('click', (e: unknown) => {
+    // @ts-ignore
+    const { lat, lng } = e.latlng
+    prestadorForm.latitude = lat
+    prestadorForm.longitude = lng
+    if (marcador) {
+      marcador.setLatLng([lat, lng])
+    } else {
+      // @ts-ignore
+      marcador = L.marker([lat, lng], { icon: icone, draggable: true }).addTo(mapaInstance)
+      marcador.on('dragend', (ev: unknown) => {
+        // @ts-ignore
+        const pos = ev.target.getLatLng()
+        prestadorForm.latitude = pos.lat
+        prestadorForm.longitude = pos.lng
+      })
     }
-    input.setSelectionRange(novoCursor, novoCursor)
   })
 }
 
-function mascaraTelefone(e: Event) {
-  aplicarMascara(e.target as HTMLInputElement, formatarTelefone, v => { form.telefoneProfissional = v })
+function usarLocalizacaoAtual() {
+  if (!navigator.geolocation) return
+  navigator.geolocation.getCurrentPosition((pos) => {
+    prestadorForm.latitude = pos.coords.latitude
+    prestadorForm.longitude = pos.coords.longitude
+    if (mapaInstance && marcador) {
+      marcador.setLatLng([pos.coords.latitude, pos.coords.longitude])
+      mapaInstance.setView([pos.coords.latitude, pos.coords.longitude], 15)
+    } else if (mapaInstance) {
+      mapaInstance.setView([pos.coords.latitude, pos.coords.longitude], 15)
+    }
+  })
 }
 
-function telefoneValido(tel: string): boolean {
-  const d = tel.replace(/\D/g, '')
-  return d.length === 10 || d.length === 11
+function confirmarLocalizacao() {
+  localizacaoSalva.value = prestadorForm.latitude !== null && prestadorForm.longitude !== null
+  fecharMapa()
 }
+
+function fecharMapa() {
+  if (mapaInstance) {
+    mapaInstance.remove()
+    mapaInstance = null
+    marcador = null
+  }
+  mapaAberto.value = false
+}
+
+function removerLocalizacao() {
+  prestadorForm.latitude = null
+  prestadorForm.longitude = null
+  localizacaoSalva.value = false
+  fecharMapa() 
+}
+
+const bairrosSelecionados = computed({
+  get: () => prestadorForm.bairros.map(String),
+  set: (v: string[]) => { prestadorForm.bairros = v.map(Number) },
+})
+
+const cidadeIdStr = computed({
+  get: () => prestadorForm.cidade_id !== null ? String(prestadorForm.cidade_id) : '',
+  set: (v: string) => { prestadorForm.cidade_id = v ? Number(v) : null },
+})
 
 function validar() {
-  if (!form.prestador) return true
+  if (!isPrestador.value) return true
   return (
-    form.servicosPrestados.length > 0 &&
-    form.bairrosAtendidos.length > 0 &&
-    form.descricao.trim() &&
-    (!form.telefoneProfissional || telefoneValido(form.telefoneProfissional))
+    especialidadesIds.value.length > 0 &&
+    prestadorForm.cidade_id !== null &&
+    prestadorForm.descricao.trim().length > 0 &&
+    (prestadorForm.atende_cidade_toda || prestadorForm.bairros.length > 0)
   )
 }
 
@@ -120,7 +252,26 @@ function handleCadastrar() {
     setTimeout(() => (agitando.value = false), 500)
     return
   }
-  emit('cadastrar', { ...form })
+
+  const especialidades: Record<number, string[]> = {}
+  especialidadesIds.value.forEach(id => {
+    especialidades[Number(id)] = []
+  })
+
+  const payload: Servicos = {
+    is_prestador: isPrestador.value,
+    prestador: isPrestador.value ? {
+      descricao: prestadorForm.descricao.trim(),
+      instagram: prestadorForm.instagram?.trim() || null,
+      cidade_id: prestadorForm.cidade_id!,
+      atende_cidade_toda: prestadorForm.atende_cidade_toda,
+      latitude: prestadorForm.latitude,
+      longitude: prestadorForm.longitude,
+      especialidades,
+      bairros: prestadorForm.atende_cidade_toda ? [] : prestadorForm.bairros,
+    } : null,
+  }
+  emit('cadastrar', payload)
 }
 </script>
 
@@ -134,12 +285,12 @@ function handleCadastrar() {
       <h3 class="pergunta-titulo">Você deseja oferecer serviços na plataforma?</h3>
       <div class="radio-grupo">
         <label class="radio-item">
-          <input type="radio" :value="false" v-model="form.prestador" class="radio-input" />
+          <input type="radio" :value="false" v-model="isPrestador" class="radio-input" />
           <span class="radio-circulo"></span>
-          <span class="radio-texto">Não</span>
+          <span class="radio-texto">Não, apenas quero contratar</span>
         </label>
         <label class="radio-item">
-          <input type="radio" :value="true" v-model="form.prestador" class="radio-input" />
+          <input type="radio" :value="true" v-model="isPrestador" class="radio-input" />
           <span class="radio-circulo"></span>
           <span class="radio-texto">Sim, quero prestar serviços</span>
         </label>
@@ -147,7 +298,8 @@ function handleCadastrar() {
     </div>
 
     <Transition name="servicos-expandir">
-      <div v-if="form.prestador" class="servicos-bloco">
+      <div v-if="isPrestador" class="servicos-bloco">
+
         <div class="separador">
           <div class="separador-linha"></div>
           <div class="separador-icone">
@@ -159,48 +311,142 @@ function handleCadastrar() {
           <div class="separador-linha"></div>
         </div>
 
-        <h3 class="servicos-titulo">Serviços prestados</h3>
+        <h3 class="servicos-titulo">Informações profissionais</h3>
 
         <div class="form-grupo">
-          <label class="form-rotulo">Serviços prestados</label>
-          <SelectCustom v-model="form.servicosPrestados" :opcoes="opcoes_servicos"
-            placeholder="Ex: Eletricista, Encanador, Pintor" :multiplo="true"
-            :class="{ 'select-erro': enviado && !form.servicosPrestados.length }" />
-          <p v-if="enviado && !form.servicosPrestados.length" class="erro-texto">Selecione ao menos um serviço</p>
-        </div>
-
-        <div class="form-grupo">
-          <label class="form-rotulo">Bairros atendidos</label>
-          <SelectCustom v-model="form.bairrosAtendidos" :opcoes="opcoes_bairros"
-            placeholder="Ex: Centro, Jatiúca, Ponta Verde" :multiplo="true"
-            :class="{ 'select-erro': enviado && !form.bairrosAtendidos.length }" />
-          <p v-if="enviado && !form.bairrosAtendidos.length" class="erro-texto">Selecione ao menos um bairro</p>
+          <label class="form-rotulo">Especialidades</label>
+          <SelectCustom v-model="especialidadesIds" :opcoes="opcoesEspecialidades"
+            placeholder="Selecione suas especialidades" :multiplo="true" :carregando="carregandoEspecialidades"
+            :class="{ 'select-erro': enviado && !especialidadesIds.length }" />
+          <p v-if="enviado && !especialidadesIds.length" class="erro-texto">Selecione ao menos uma especialidade</p>
         </div>
 
         <div class="form-grupo">
           <label class="form-rotulo">Descrição profissional</label>
-          <textarea v-model="form.descricao" class="form-textarea"
-            :class="{ 'input-erro': enviado && !form.descricao.trim() }"
-            placeholder="Descreva seus serviços e experiência" rows="4" />
-          <p v-if="enviado && !form.descricao.trim()" class="erro-texto">Campo obrigatório</p>
+          <textarea v-model="prestadorForm.descricao" class="form-textarea"
+            :class="{ 'input-erro': enviado && !prestadorForm.descricao.trim() }"
+            placeholder="Descreva seus serviços, experiência e diferenciais" rows="4" />
+          <p v-if="enviado && !prestadorForm.descricao.trim()" class="erro-texto">Campo obrigatório</p>
         </div>
 
         <div class="form-grupo">
           <label class="form-rotulo">
-            Telefone profissional
+            Instagram
             <span class="rotulo-opcional">(opcional)</span>
           </label>
-          <input :value="form.telefoneProfissional" @input="mascaraTelefone" @blur="tocado.telefoneProfissional = true"
-            @keypress="(e) => !/\d/.test(e.key) && e.preventDefault()" type="tel" class="form-input"
-            :class="{ 'input-erro': tocado.telefoneProfissional && form.telefoneProfissional && !telefoneValido(form.telefoneProfissional) }"
-            placeholder="(00) 00000-0000" autocomplete="tel" maxlength="15" />
-          <p v-if="tocado.telefoneProfissional && form.telefoneProfissional && !telefoneValido(form.telefoneProfissional)"
-            class="erro-texto">
-            Telefone inválido
-          </p>
+          <input v-model="prestadorForm.instagram" type="text" class="form-input" placeholder="@seuusuario"
+            autocomplete="off" />
         </div>
+
+        <div class="form-grupo">
+          <label class="form-rotulo">Cidade</label>
+          <SelectCustom v-model="cidadeIdStr" :opcoes="opcoesCidades" placeholder="Selecione sua cidade"
+            :multiplo="false" :carregando="carregandoCidades"
+            :class="{ 'select-erro': enviado && !prestadorForm.cidade_id }" />
+          <p v-if="enviado && !prestadorForm.cidade_id" class="erro-texto">Selecione uma cidade</p>
+        </div>
+
+        <div class="form-grupo">
+          <label class="form-rotulo">Área de atendimento</label>
+          <div class="toggle-wrapper">
+            <button type="button" class="toggle-btn" :class="{ 'toggle-ativo': prestadorForm.atende_cidade_toda }"
+              @click="prestadorForm.atende_cidade_toda = true">
+              Cidade toda
+            </button>
+            <button type="button" class="toggle-btn" :class="{ 'toggle-ativo': !prestadorForm.atende_cidade_toda }"
+              @click="prestadorForm.atende_cidade_toda = false">
+              Bairros específicos
+            </button>
+          </div>
+        </div>
+
+        <Transition name="servicos-expandir">
+          <div v-if="!prestadorForm.atende_cidade_toda" class="form-grupo">
+            <label class="form-rotulo">Bairros atendidos</label>
+            <SelectCustom v-model="bairrosSelecionados" :opcoes="opcoesBairros" placeholder="Selecione os bairros"
+              :multiplo="true" :carregando="carregandoBairros" :disabled="!prestadorForm.cidade_id"
+              :class="{ 'select-erro': enviado && !prestadorForm.bairros.length }" />
+            <p v-if="!prestadorForm.cidade_id" class="dica-texto">Selecione uma cidade primeiro</p>
+            <p v-else-if="enviado && !prestadorForm.bairros.length" class="erro-texto">Selecione ao menos um bairro</p>
+          </div>
+        </Transition>
+
+        <div class="form-grupo">
+          <label class="form-rotulo">
+            Localização
+            <span class="rotulo-opcional">(opcional)</span>
+          </label>
+
+          <div v-if="localizacaoSalva" class="localizacao-salva">
+            <div class="localizacao-salva-info">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" />
+                <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" />
+              </svg>
+              <span>Localização salva</span>
+              <span class="localizacao-coords">{{ prestadorForm.latitude?.toFixed(4) }}, {{
+                prestadorForm.longitude?.toFixed(4) }}</span>
+            </div>
+            <div class="localizacao-acoes">
+              <button type="button" class="btn-loc-acao" @click="abrirMapa">Editar</button>
+              <button type="button" class="btn-loc-acao btn-loc-remover" @click="removerLocalizacao">Remover</button>
+            </div>
+          </div>
+
+          <button v-else type="button" class="btn-mapa" @click="abrirMapa">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" />
+              <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" />
+            </svg>
+            Adicionar localização no mapa
+          </button>
+
+          <Teleport to="body">
+            <Transition name="modal">
+              <div v-if="mapaAberto" class="mapa-overlay">
+                <div class="mapa-card">
+                  <div class="mapa-cabecalho">
+                    <div>
+                      <h3 class="mapa-titulo">Sua localização</h3>
+                      <p class="mapa-subtitulo">Clique no mapa ou arraste o marcador para ajustar</p>
+                    </div>
+                    <button type="button" class="btn-fechar-mapa" @click="fecharMapa()" aria-label="Fechar">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div ref="mapaRef" class="mapa-container"></div>
+                  <div class="mapa-rodape">
+                    <button type="button" class="btn-gps" @click="usarLocalizacaoAtual">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" />
+                      </svg>
+                      Usar localização atual
+                    </button>
+                    <div class="mapa-rodape-acoes">
+                      <button type="button" class="btn-secundario-sm" @click="fecharMapa()">Cancelar</button>
+                      <button type="button" class="btn-primario-sm" @click="confirmarLocalizacao"
+                        :disabled="prestadorForm.latitude === null">
+                        Confirmar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+          </Teleport>
+        </div>
+
       </div>
     </Transition>
+
+    <div v-if="props.erro" class="erro-global">{{ props.erro }}</div>
 
     <div class="form-acoes">
       <button type="button" class="btn-secundario" @click="$emit('voltar')">
@@ -210,8 +456,15 @@ function handleCadastrar() {
         </svg>
         Voltar
       </button>
-      <button type="submit" class="btn-primario">Cadastrar</button>
+      <button type="submit" class="btn-primario" :disabled="carregando">
+        <svg v-if="carregando" class="spinner" width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5" stroke-dasharray="31.4"
+            stroke-dashoffset="10" stroke-linecap="round" />
+        </svg>
+        {{ carregando ? 'Cadastrando...' : 'Cadastrar' }}
+      </button>
     </div>
+
   </form>
 </template>
 
@@ -306,7 +559,7 @@ function handleCadastrar() {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.22s ease, background 0.22s ease;
+  transition: border-color 0.22s ease;
   position: relative;
 }
 
@@ -377,7 +630,7 @@ function handleCadastrar() {
 }
 
 .servicos-titulo {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-neutral-darkest);
 }
@@ -397,6 +650,7 @@ function handleCadastrar() {
 .rotulo-opcional {
   font-weight: 400;
   color: var(--color-neutral-light-dark);
+  margin-left: 0.25rem;
 }
 
 .form-input {
@@ -464,6 +718,271 @@ function handleCadastrar() {
   font-weight: 500;
 }
 
+.dica-texto {
+  font-size: 0.72rem;
+  color: var(--color-neutral-light-dark);
+  font-weight: 500;
+}
+
+.toggle-wrapper {
+  display: flex;
+  border: 1.5px solid var(--color-neutral-light-medium);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.toggle-btn {
+  flex: 1;
+  height: 38px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: var(--color-neutral-light-white);
+  color: var(--color-neutral-light-dark);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.toggle-btn+.toggle-btn {
+  border-left: 1.5px solid var(--color-neutral-light-medium);
+}
+
+.toggle-ativo {
+  background: var(--color-primary-medium);
+  color: white;
+}
+
+.btn-mapa {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 0.9rem;
+  border: 1.5px dashed var(--color-neutral-light-medium);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-neutral-medium);
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  width: fit-content;
+}
+
+.btn-mapa:hover {
+  border-color: var(--color-primary-medium);
+  color: var(--color-primary-medium);
+}
+
+.localizacao-salva {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid var(--color-neutral-light-light);
+  border-radius: 10px;
+  background: var(--color-neutral-light-lightest);
+  gap: 0.5rem;
+}
+
+.localizacao-salva-info {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-neutral-dark);
+}
+
+.localizacao-coords {
+  font-weight: 400;
+  color: var(--color-neutral-medium);
+  font-size: 0.72rem;
+}
+
+.localizacao-acoes {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-loc-acao {
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-primary-medium);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.btn-loc-acao:hover {
+  background: rgba(62, 58, 168, 0.08);
+}
+
+.btn-loc-remover {
+  color: var(--color-error-dark);
+}
+
+.btn-loc-remover:hover {
+  background: rgba(255, 97, 109, 0.08);
+}
+
+.mapa-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 100;
+}
+
+.mapa-card {
+  width: 100%;
+  max-width: 580px;
+  background: var(--color-neutral-light-white);
+  border-radius: 18px;
+  border: 1px solid var(--color-neutral-light-light);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mapa-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.25rem 1.25rem 1rem;
+  gap: 0.5rem;
+}
+
+.mapa-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-neutral-darkest);
+  line-height: 1.2;
+}
+
+.mapa-subtitulo {
+  font-size: 0.76rem;
+  color: var(--color-neutral-medium);
+  margin-top: 0.2rem;
+}
+
+.btn-fechar-mapa {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-neutral-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.btn-fechar-mapa:hover {
+  color: var(--color-neutral-dark);
+  background: var(--color-neutral-light-light);
+}
+
+.mapa-container {
+  width: 100%;
+  height: 320px;
+}
+
+.mapa-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--color-neutral-light-light);
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-gps {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-primary-medium);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.btn-gps:hover {
+  background: rgba(62, 58, 168, 0.07);
+}
+
+.mapa-rodape-acoes {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-primario-sm,
+.btn-secundario-sm {
+  height: 36px;
+  padding: 0 1rem;
+  border-radius: 9px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primario-sm {
+  background: var(--color-primary-medium);
+  color: white;
+  border: none;
+}
+
+.btn-primario-sm:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(62, 58, 168, 0.35);
+}
+
+.btn-primario-sm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-secundario-sm {
+  background: transparent;
+  color: var(--color-neutral-dark);
+  border: 1.5px solid var(--color-neutral-light-medium);
+}
+
+.btn-secundario-sm:hover {
+  background: var(--color-neutral-light-light);
+}
+
+.erro-global {
+  padding: 0.65rem 0.9rem;
+  background: rgba(255, 97, 109, 0.08);
+  border: 1.5px solid var(--color-error-medium);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-error-dark);
+}
+
 .form-acoes {
   display: flex;
   gap: 0.75rem;
@@ -503,18 +1022,23 @@ function handleCadastrar() {
   transition: opacity 0.3s ease;
 }
 
-.btn-primario:hover {
+.btn-primario:hover:not(:disabled) {
   transform: translateY(-3px) scale(1.01);
   box-shadow: 0 12px 32px rgba(62, 58, 168, 0.42);
 }
 
-.btn-primario:hover::after {
+.btn-primario:hover:not(:disabled)::after {
   opacity: 1;
 }
 
 .btn-primario:active {
   transform: translateY(0) scale(0.98);
   box-shadow: none;
+}
+
+.btn-primario:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .btn-secundario {
@@ -531,6 +1055,16 @@ function handleCadastrar() {
 
 .btn-secundario:active {
   transform: translateY(0) scale(0.98);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
 }
 
 .servicos-expandir-enter-active {
@@ -551,17 +1085,39 @@ function handleCadastrar() {
   transform: translateY(-8px);
 }
 
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.16s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-active .mapa-card {
+  animation: modal-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modal-pop {
+  from {
+    transform: translateY(14px) scale(0.98);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
 @media (min-width: 768px) {
   .step-form {
     gap: 1.1rem;
   }
 
-  .pergunta-titulo {
-    font-size: 1.05rem;
-  }
-
-  .servicos-titulo {
-    font-size: 1.2rem;
+  .mapa-container {
+    height: 380px;
   }
 }
 </style>

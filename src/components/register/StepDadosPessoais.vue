@@ -1,18 +1,39 @@
 <script setup lang="ts">
-import { reactive, ref, computed, nextTick } from 'vue'
+import { reactive, ref, computed, nextTick, watch } from 'vue'
+import ModalCropFoto from '@/components/register/ModalCropFoto.vue'
 
-interface DadosPessoais { nome: string; cpf: string; telefone: string; email: string; senha: string; confirmarSenha: string }
+interface DadosPessoais {
+  nome: string
+  email: string
+  senha: string
+  confirmarSenha: string
+  contato: string
+  foto: File | null
+}
 
-const props = defineProps<{ dados: DadosPessoais }>()
-const emit = defineEmits<{ proximo: [dados: DadosPessoais] }>()
+const props = defineProps<{
+  dados: DadosPessoais
+  fotoB64?: string | null
+  formRestaurado?: boolean
+}>()
+
+const emit = defineEmits<{
+  proximo: [dados: DadosPessoais]
+  atualizar: [dados: DadosPessoais]
+}>()
 
 const form = reactive({ ...props.dados })
 const senhaVisivel = ref(false)
 const confirmarVisivel = ref(false)
 const enviado = ref(false)
 const agitando = ref(false)
-const tocado = reactive({ cpf: false, telefone: false, email: false, confirmarSenha: false, senha: false })
+const tocado = reactive({ contato: false, email: false, confirmarSenha: false, senha: false })
 const entrou = ref(false)
+const fotoPreview = ref<string | null>(null)
+
+const modalCropAberto = ref(false)
+const imagemBruta = ref<string | null>(null)
+const inputFotoRef = ref<HTMLInputElement | null>(null)
 
 const requisitos = computed(() => ({
   maiuscula: /[A-Z]/.test(form.senha),
@@ -39,14 +60,14 @@ function onAnimacaoEntrar() {
 function validar() {
   return (
     form.nome &&
-    cpfValido(form.cpf) &&
-    telefoneValido(form.telefone) &&
     form.email &&
     emailValido(form.email) &&
     form.senha &&
     senhaForte.value &&
     form.confirmarSenha &&
-    form.senha === form.confirmarSenha
+    form.senha === form.confirmarSenha &&
+    contatoValido(form.contato) &&
+    (form.foto !== null || !!props.fotoB64)
   )
 }
 
@@ -85,14 +106,6 @@ function aplicarMascara(
   })
 }
 
-function formatarCpf(digits: string): string {
-  const d = digits.slice(0, 11)
-  if (d.length > 9) return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4')
-  if (d.length > 6) return d.replace(/^(\d{3})(\d{3})(\d+)$/, '$1.$2.$3')
-  if (d.length > 3) return d.replace(/^(\d{3})(\d+)$/, '$1.$2')
-  return d
-}
-
 function formatarTelefone(digits: string): string {
   const d = digits.slice(0, 11)
   if (d.length > 7) return d.replace(/^(\d{2})(\d{5})(\d{1,4})$/, '($1) $2-$3')
@@ -100,26 +113,69 @@ function formatarTelefone(digits: string): string {
   return d
 }
 
-function mascaraCpf(e: Event) {
-  aplicarMascara(e.target as HTMLInputElement, formatarCpf, v => { form.cpf = v })
-}
-
-function mascaraTelefone(e: Event) {
-  aplicarMascara(e.target as HTMLInputElement, formatarTelefone, v => { form.telefone = v })
+function mascaraContato(e: Event) {
+  aplicarMascara(e.target as HTMLInputElement, formatarTelefone, v => { form.contato = v })
 }
 
 function emailValido(email: string): boolean {
   return email.includes('@') && email.includes('.')
 }
 
-function cpfValido(cpf: string): boolean {
-  return cpf.replace(/\D/g, '').length === 11
-}
-
-function telefoneValido(tel: string): boolean {
+function contatoValido(tel: string): boolean {
   const d = tel.replace(/\D/g, '')
   return d.length === 10 || d.length === 11
 }
+
+function handleFoto(e: Event) {
+  const arquivo = (e.target as HTMLInputElement).files?.[0]
+  if (!arquivo) return
+    ; (e.target as HTMLInputElement).value = ''
+  imagemBruta.value = URL.createObjectURL(arquivo)
+  modalCropAberto.value = true
+}
+
+function onCropConfirmado(file: File) {
+  form.foto = file
+  fotoPreview.value = URL.createObjectURL(file)
+  modalCropAberto.value = false
+  imagemBruta.value = null
+}
+
+function onCropFechado() {
+  modalCropAberto.value = false
+  imagemBruta.value = null
+}
+
+function abrirSeletorFoto() {
+  inputFotoRef.value?.click()
+}
+
+function removerFoto() {
+  form.foto = null
+  fotoPreview.value = null
+}
+
+watch(
+  () => props.fotoB64,
+  (b64) => {
+    if (b64 && !fotoPreview.value) {
+      fotoPreview.value = b64
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.dados.foto,
+  (foto) => {
+    if (foto instanceof File && !fotoPreview.value) {
+      fotoPreview.value = URL.createObjectURL(foto)
+    }
+  },
+  { immediate: true }
+)
+
+watch(form, (v) => emit('atualizar', { ...v }), { deep: true })
 </script>
 
 <template>
@@ -129,31 +185,63 @@ function telefoneValido(tel: string): boolean {
   }" @animationend="onAnimacaoEntrar" novalidate>
 
     <div class="form-grupo">
+      <label class="form-rotulo">Foto de perfil</label>
+
+
+      <div class="foto-area">
+        <div class="foto-upload" :class="{ 'foto-erro': enviado && !form.foto && !props.fotoB64 }">
+          <template v-if="fotoPreview">
+            <img :src="fotoPreview" alt="Foto de perfil" class="foto-preview" />
+            <div class="foto-overlay" @click="removerFoto" title="Remover foto">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+          </template>
+          <template v-else>
+            <div class="foto-label" @click="abrirSeletorFoto">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span>Enviar foto</span>
+            </div>
+          </template>
+        </div>
+
+        <div class="foto-info">
+          <p class="foto-info-titulo">
+            {{ fotoPreview ? 'Foto adicionada' : 'Nenhuma foto escolhida' }}
+          </p>
+          <p class="foto-info-descricao">
+            {{ fotoPreview
+              ? 'Passe o mouse sobre o avatar para remover.'
+              : 'JPG, PNG ou WEBP. Você poderá recortar após o upload.' }}
+          </p>
+
+          <button v-if="!fotoPreview" type="button" class="btn-trocar-foto" @click="abrirSeletorFoto">
+            Escolher arquivo
+          </button>
+          <button v-else type="button" class="btn-trocar-foto" @click="abrirSeletorFoto">
+            Trocar foto
+          </button>
+        </div>
+      </div>
+
+      <p v-if="enviado && !form.foto && !props.fotoB64" class="erro-texto">Campo obrigatório</p>
+    </div>
+
+    <input ref="inputFotoRef" type="file" accept="image/*" class="foto-input-hidden" @change="handleFoto" />
+
+    <ModalCropFoto :aberto="modalCropAberto" :imagemSrc="imagemBruta" @fechar="onCropFechado"
+      @confirmar="onCropConfirmado" />
+
+    <div class="form-grupo">
       <label class="form-rotulo">Nome completo</label>
       <input v-model="form.nome" type="text" class="form-input" :class="{ 'input-erro': enviado && !form.nome }"
         placeholder="João da Silva" autocomplete="name" />
       <p v-if="enviado && !form.nome" class="erro-texto">Campo obrigatório</p>
-    </div>
-
-    <div class="form-grupo">
-      <label class="form-rotulo">CPF</label>
-      <input :value="form.cpf" @input="mascaraCpf" @blur="tocado.cpf = true"
-        @keypress="(e) => !/\d/.test(e.key) && e.preventDefault()" type="text" class="form-input"
-        :class="{ 'input-erro': (enviado && !form.cpf) || (tocado.cpf && form.cpf && !cpfValido(form.cpf)) }"
-        placeholder="000.000.000-00" inputmode="numeric" maxlength="14" />
-      <p v-if="enviado && !form.cpf" class="erro-texto">Campo obrigatório</p>
-      <p v-else-if="tocado.cpf && form.cpf && !cpfValido(form.cpf)" class="erro-texto">CPF inválido</p>
-    </div>
-
-    <div class="form-grupo">
-      <label class="form-rotulo">Telefone</label>
-      <input :value="form.telefone" @input="mascaraTelefone" @blur="tocado.telefone = true"
-        @keypress="(e) => !/\d/.test(e.key) && e.preventDefault()" type="tel" class="form-input"
-        :class="{ 'input-erro': (enviado && !form.telefone) || (tocado.telefone && form.telefone && !telefoneValido(form.telefone)) }"
-        placeholder="(00) 00000-0000" autocomplete="tel" maxlength="15" />
-      <p v-if="enviado && !form.telefone" class="erro-texto">Campo obrigatório</p>
-      <p v-else-if="tocado.telefone && form.telefone && !telefoneValido(form.telefone)" class="erro-texto">Telefone
-        inválido</p>
     </div>
 
     <div class="form-grupo">
@@ -163,6 +251,17 @@ function telefoneValido(tel: string): boolean {
         placeholder="seu@email.com" autocomplete="email" />
       <p v-if="enviado && !form.email" class="erro-texto">Campo obrigatório</p>
       <p v-else-if="tocado.email && form.email && !emailValido(form.email)" class="erro-texto">Email inválido</p>
+    </div>
+
+    <div class="form-grupo">
+      <label class="form-rotulo">Telefone</label>
+      <input :value="form.contato" @input="mascaraContato" @blur="tocado.contato = true"
+        @keypress="(e) => !/\d/.test(e.key) && e.preventDefault()" type="tel" class="form-input"
+        :class="{ 'input-erro': (enviado && !form.contato) || (tocado.contato && form.contato && !contatoValido(form.contato)) }"
+        placeholder="(00) 00000-0000" autocomplete="tel" maxlength="15" />
+      <p v-if="enviado && !form.contato" class="erro-texto">Campo obrigatório</p>
+      <p v-else-if="tocado.contato && form.contato && !contatoValido(form.contato)" class="erro-texto">Telefone inválido
+      </p>
     </div>
 
     <div class="form-grupo">
@@ -363,6 +462,113 @@ function telefoneValido(tel: string): boolean {
   font-size: 0.72rem;
   color: var(--color-error-dark);
   font-weight: 500;
+}
+
+.foto-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.foto-upload {
+  position: relative;
+  width: 80px;
+  min-width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px dashed var(--color-neutral-light-medium);
+  background: var(--color-neutral-light-lightest);
+  transition: border-color 0.22s ease;
+  overflow: hidden;
+}
+
+.foto-erro {
+  border-color: var(--color-error-medium) !important;
+  box-shadow: 0 0 0 3px rgba(255, 97, 109, 0.12);
+}
+
+.foto-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  color: var(--color-neutral-light-dark);
+  font-size: 0.65rem;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.foto-label:hover {
+  color: var(--color-primary-medium);
+}
+
+.foto-input-hidden {
+  display: none;
+}
+
+.foto-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.foto-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  border-radius: 50%;
+  transition: background 0.22s ease;
+}
+
+.foto-overlay:hover {
+  background: rgba(0, 0, 0, 0.52);
+}
+
+.foto-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.foto-info-titulo {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-neutral-dark);
+}
+
+.foto-info-descricao {
+  font-size: 0.72rem;
+  color: var(--color-neutral-medium);
+  line-height: 1.4;
+}
+
+.btn-trocar-foto {
+  margin-top: 0.2rem;
+  background: none;
+  border: 1.5px solid var(--color-neutral-light-medium);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-neutral-dark);
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  width: fit-content;
+}
+
+.btn-trocar-foto:hover {
+  border-color: var(--color-primary-medium);
+  color: var(--color-primary-medium);
 }
 
 .requisitos-wrapper {

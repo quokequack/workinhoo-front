@@ -1,21 +1,25 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 
-interface Opcao { value: string; label: string }
+interface Opcao { value: string | number; label: string }
 
 interface Props {
-  modelValue: string | string[]
+  modelValue: string | number | (string | number)[]
   opcoes: Opcao[]
   placeholder?: string
   multiplo?: boolean
+  carregando?: boolean
+  disabled?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: 'Selecione...',
-  multiplo: false
+  multiplo: false,
+  carregando: false,
+  disabled: false,
 })
 
-const emit = defineEmits<{ 'update:modelValue': [value: string | string[]] }>()
+const emit = defineEmits<{ 'update:modelValue': [value: string | number | (string | number)[]] }>()
 
 const aberto = ref(false)
 const containerRef = ref<HTMLElement | null>(null)
@@ -30,20 +34,25 @@ const opcoesFiltradas = computed(() =>
     : props.opcoes
 )
 
-const valoresSelecionados = computed<string[]>(() =>
-  props.multiplo ? (props.modelValue as string[]) : (props.modelValue ? [props.modelValue as string] : [])
+const valoresSelecionados = computed<(string | number)[]>(() =>
+  props.multiplo
+    ? (props.modelValue as (string | number)[])
+    : (props.modelValue !== '' && props.modelValue !== null && props.modelValue !== undefined
+      ? [props.modelValue as string | number]
+      : [])
 )
 
 const labelValor = computed(() => {
   if (props.multiplo) return ''
-  return props.opcoes.find(o => o.value === (props.modelValue as string))?.label ?? ''
+  return props.opcoes.find(o => String(o.value) === String(props.modelValue))?.label ?? ''
 })
 
-function isSelecionado(value: string) {
-  return valoresSelecionados.value.includes(value)
+function isSelecionado(value: string | number) {
+  return valoresSelecionados.value.map(String).includes(String(value))
 }
 
 async function abrirDropdown() {
+  if (props.disabled || props.carregando) return
   aberto.value = !aberto.value
   if (aberto.value) {
     pesquisa.value = ''
@@ -54,8 +63,8 @@ async function abrirDropdown() {
 
 function selecionar(opcao: Opcao) {
   if (props.multiplo) {
-    const atual = [...(props.modelValue as string[])]
-    const idx = atual.indexOf(opcao.value)
+    const atual = [...(props.modelValue as (string | number)[])]
+    const idx = atual.map(String).indexOf(String(opcao.value))
     if (idx === -1) atual.push(opcao.value)
     else atual.splice(idx, 1)
     emit('update:modelValue', atual)
@@ -66,9 +75,12 @@ function selecionar(opcao: Opcao) {
   }
 }
 
-function removerTag(value: string, e: MouseEvent) {
+function removerTag(value: string | number, e: MouseEvent) {
   e.stopPropagation()
-  emit('update:modelValue', (props.modelValue as string[]).filter(v => v !== value))
+  emit(
+    'update:modelValue',
+    (props.modelValue as (string | number)[]).filter(v => String(v) !== String(value))
+  )
 }
 
 function clickFora(e: MouseEvent) {
@@ -83,13 +95,16 @@ onUnmounted(() => document.removeEventListener('mousedown', clickFora))
 </script>
 
 <template>
-  <div class="select" :class="{ 'select-aberto': aberto }" ref="containerRef">
-    <button type="button" class="select-gatilho" @click="abrirDropdown">
+  <div class="select" :class="{ 'select-aberto': aberto, 'select-disabled': disabled }" ref="containerRef">
+    <button type="button" class="select-gatilho" @click="abrirDropdown" :disabled="disabled">
       <div class="select-valor">
-        <template v-if="multiplo && (modelValue as string[]).length">
+        <template v-if="carregando">
+          <span class="select-placeholder">Carregando...</span>
+        </template>
+        <template v-else-if="multiplo && (modelValue as (string | number)[]).length">
           <div class="select-tags">
-            <span v-for="val in (modelValue as string[])" :key="val" class="select-tag">
-              {{opcoes.find(o => o.value === val)?.label}}
+            <span v-for="val in (modelValue as (string | number)[])" :key="val" class="select-tag">
+              {{opcoes.find(o => String(o.value) === String(val))?.label}}
               <button type="button" class="tag-remover" @click="removerTag(val, $event)">
                 <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
                   <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
@@ -151,6 +166,11 @@ onUnmounted(() => document.removeEventListener('mousedown', clickFora))
 .select {
   position: relative;
   width: 100%;
+}
+
+.select-disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .select-gatilho {
