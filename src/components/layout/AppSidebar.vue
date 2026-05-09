@@ -1,5 +1,7 @@
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue'
+
+const props = defineProps<{
     titulo: string
     subtitulo?: string
     imagem: string
@@ -13,42 +15,60 @@ defineProps<{
     linkTo: string
     lista?: string[]
 }>()
+
+const btnIconeSrc = computed(() => {
+    if (!props.btnIcone) return null
+    return new URL(`../../assets/icons/${props.btnIcone}`, import.meta.url).href
+})
+
+const imagemSrc = computed(() => {
+    return new URL(`../../assets/images/${props.imagem}`, import.meta.url).href
+})
+
+const checkIconSrc = new URL(
+    '../../assets/icons/check-white.svg',
+    import.meta.url
+).href
 </script>
 
 <template>
     <aside class="sidebar">
         <header class="sidebar-cabecalho">
             <router-link :to="btnTo" class="btn-acao" :class="{ 'btn-acao--animate': btnAnimate }">
-                <img v-if="btnIcone" :src="`/src/assets/icons/${btnIcone}`" :alt="`Ícone ${btnLabel}`" width="12"
-                    height="12" />
+                <img v-if="btnIconeSrc" :src="btnIconeSrc" :alt="`Ícone ${btnLabel}`" width="12" height="12" />
                 {{ btnLabel }}
             </router-link>
 
             <p class="sidebar-login">
                 {{ headerTexto }}
-                <router-link :to="linkTo" class="link-acao">{{ linkLabel }}</router-link>
+                <router-link :to="linkTo" class="link-acao">
+                    {{ linkLabel }}
+                </router-link>
             </p>
         </header>
 
         <div class="sidebar-corpo">
             <div class="sidebar-texto">
                 <h2 class="sidebar-titulo" v-html="titulo" />
-                <p v-if="subtitulo" class="sidebar-subtitulo">{{ subtitulo }}</p>
+                <p v-if="subtitulo" class="sidebar-subtitulo">
+                    {{ subtitulo }}
+                </p>
             </div>
 
             <div class="sidebar-imagem">
-                <img :src="`/src/assets/images/${imagem}`" :alt="imagemAlt" />
+                <img :src="imagemSrc" :alt="imagemAlt" />
             </div>
 
             <ul v-if="lista && lista.length" class="sidebar-lista">
                 <li v-for="(item, index) in lista" :key="index">
-                    <img src="@/assets/icons/check-white.svg" alt="Ícone de check" width="17" height="17" />
+                    <img :src="checkIconSrc" alt="Ícone de check" width="17" height="17" />
                     {{ item }}
                 </li>
             </ul>
         </div>
     </aside>
 </template>
+
 
 <style scoped>
 .sidebar {
