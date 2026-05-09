@@ -186,12 +186,10 @@ async function handleCadastrar(servicos: Servicos) {
     }
 
     await api.get('/sanctum/csrf-cookie')
-    await api.post('api/signup', formPayload, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    await api.post('api/signup', formPayload)
 
     limparSession()
-    mostrarModalSucesso.value = true 
+    mostrarModalSucesso.value = true
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { message?: string } } }
     erroGlobal.value =
