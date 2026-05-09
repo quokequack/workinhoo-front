@@ -232,10 +232,17 @@ onBeforeRouteLeave(() => limparSession())
 
 <template>
   <div class="cadastrar-pagina">
-    <AppSidebar titulo="Crie sua conta e comece agora no <strong>Workinhoo</strong>" imagem="register-illustration.svg"
+    <AppSidebar titulo="Crie sua conta e comece agora no Workinhoo" imagem="register-illustration.svg"
       imagem-alt="Ilustração de cadastro" btn-label="Início" btn-to="/" header-texto="Já possui conta?"
-      link-label="Entrar" link-to="/entrar"
-      :lista="['Encontre profissionais próximos', 'Divulgue seus serviços', 'Tudo de forma simples']" />
+      link-label="Entrar" link-to="/entrar" :lista="[
+        'Encontre profissionais próximos',
+        'Divulgue seus serviços',
+        'Tudo de forma simples'
+      ]">
+      <template #titulo>
+        Crie sua conta e comece agora no <strong>Workinhoo</strong>
+      </template>
+    </AppSidebar>
 
     <main class="cadastrar-main">
       <div class="mobile-banner">

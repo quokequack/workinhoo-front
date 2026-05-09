@@ -49,7 +49,11 @@ const checkIconSrc = new URL(
 
         <div class="sidebar-corpo">
             <div class="sidebar-texto">
-                <h2 class="sidebar-titulo" v-html="titulo" />
+                <h2 class="sidebar-titulo">
+                    <slot name="titulo">
+                        {{ titulo }}
+                    </slot>
+                </h2>
                 <p v-if="subtitulo" class="sidebar-subtitulo">
                     {{ subtitulo }}
                 </p>
