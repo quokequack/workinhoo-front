@@ -13,7 +13,7 @@ interface Servicos {
     atende_cidade_toda: boolean
     latitude: number | null
     longitude: number | null
-    especialidades: Record<number, string[]>
+    especialidades: Record<string, string[]>
     bairros: number[]
   } | null
 }
@@ -27,13 +27,14 @@ const props = defineProps<{
   dados: Servicos
   carregando: boolean
   erro?: string | null
-  cidadesDisponiveis: { value: number; label: string }[]        
-  especialidadesDisponiveis: { value: string; label: string }[] 
+  cidadesDisponiveis: { value: number; label: string }[]
+  especialidadesDisponiveis: { value: string; label: string }[]
 }>()
+
 const emit = defineEmits<{
   cadastrar: [dados: Servicos]
   voltar: []
-  atualizar: [dados: Servicos]  
+  atualizar: [dados: Servicos]
 }>()
 
 const cacheBairros: Record<number, OpcaoSelect[]> = {}
@@ -47,6 +48,15 @@ const isPrestador = ref(props.dados.is_prestador)
 const especialidadesIds = ref<string[]>(
   Object.keys(props.dados.prestador?.especialidades ?? {})
 )
+
+const subcategorias = ref<Record<string, string[]>>(
+  Object.fromEntries(
+    Object.entries(props.dados.prestador?.especialidades ?? {}).map(([id, subs]) => [id, [...subs]])
+  )
+)
+
+const inputSubcategorias = reactive<Record<string, string>>({})
+const inputsAbandonados = reactive<Record<string, boolean>>({})
 
 const prestadorForm = reactive({
   descricao: props.dados.prestador?.descricao ?? '',
@@ -74,13 +84,62 @@ const localizacaoSalva = ref(
 let mapaInstance: Map | null = null
 let marcador: Marker | null = null
 
+watch(especialidadesIds, (novasIds, antigasIds) => {
+  if (!antigasIds) return
+  antigasIds.forEach((id) => {
+    if (!novasIds.includes(id)) {
+      delete subcategorias.value[id]
+      delete inputSubcategorias[id]
+    }
+  })
+  novasIds.forEach((id) => {
+    if (!subcategorias.value[id]) {
+      subcategorias.value[id] = []
+    }
+  })
+})
+
+function onBlurSubcategoria(especialidadeId: string) {
+  const texto = (inputSubcategorias[especialidadeId] ?? '').trim()
+  inputsAbandonados[especialidadeId] = texto.length > 0
+}
+
+function onFocusSubcategoria(especialidadeId: string) {
+  inputsAbandonados[especialidadeId] = false
+}
+
+function adicionarSubcategoria(especialidadeId: string) {
+  const texto = (inputSubcategorias[especialidadeId] ?? '').trim()
+  if (!texto) return
+  if (!subcategorias.value[especialidadeId]) subcategorias.value[especialidadeId] = []
+  subcategorias.value[especialidadeId].push(texto)
+  inputSubcategorias[especialidadeId] = ''
+  inputsAbandonados[especialidadeId] = false
+}
+
+function removerSubcategoria(especialidadeId: string, index: number) {
+  subcategorias.value[especialidadeId]?.splice(index, 1)
+}
+
+function onInputSubcategoriaKeydown(especialidadeId: string, event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    adicionarSubcategoria(especialidadeId)
+  }
+}
+
+const especialidadesPayload = computed<Record<string, string[]>>(() =>
+  Object.fromEntries(
+    especialidadesIds.value.map((id) => [id, subcategorias.value[id] ?? []])
+  )
+)
+
 async function carregarBairros(cidadeId: number, preservarBairros = false) {
   if (cacheBairros[cidadeId]) {
     opcoesBairros.value = cacheBairros[cidadeId]
     if (!preservarBairros) prestadorForm.bairros = []
     return
   }
-
   carregandoBairros.value = true
   if (!preservarBairros) prestadorForm.bairros = []
   try {
@@ -89,7 +148,7 @@ async function carregarBairros(cidadeId: number, preservarBairros = false) {
       value: b.id,
       label: b.nome,
     }))
-    cacheBairros[cidadeId] = opcoes 
+    cacheBairros[cidadeId] = opcoes
     opcoesBairros.value = opcoes
   } catch {
     opcoesBairros.value = []
@@ -105,17 +164,13 @@ watch(() => prestadorForm.cidade_id, (id) => {
 })
 
 watch(
-  [isPrestador, prestadorForm, especialidadesIds],
+  [isPrestador, prestadorForm, especialidadesIds, subcategorias],
   () => {
-    const especialidades: Record<number, string[]> = {}
-    especialidadesIds.value.forEach(id => {
-      especialidades[Number(id)] = []
-    })
     emit('atualizar', {
       is_prestador: isPrestador.value,
       prestador: isPrestador.value ? {
         ...prestadorForm,
-        especialidades,
+        especialidades: especialidadesPayload.value,
         bairros: prestadorForm.atende_cidade_toda ? [] : prestadorForm.bairros,
       } : null,
     })
@@ -218,7 +273,7 @@ function removerLocalizacao() {
   prestadorForm.latitude = null
   prestadorForm.longitude = null
   localizacaoSalva.value = false
-  fecharMapa() 
+  fecharMapa()
 }
 
 const bairrosSelecionados = computed({
@@ -253,11 +308,6 @@ function handleCadastrar() {
     return
   }
 
-  const especialidades: Record<number, string[]> = {}
-  especialidadesIds.value.forEach(id => {
-    especialidades[Number(id)] = []
-  })
-
   const payload: Servicos = {
     is_prestador: isPrestador.value,
     prestador: isPrestador.value ? {
@@ -267,7 +317,7 @@ function handleCadastrar() {
       atende_cidade_toda: prestadorForm.atende_cidade_toda,
       latitude: prestadorForm.latitude,
       longitude: prestadorForm.longitude,
-      especialidades,
+      especialidades: especialidadesPayload.value,
       bairros: prestadorForm.atende_cidade_toda ? [] : prestadorForm.bairros,
     } : null,
   }
@@ -320,6 +370,54 @@ function handleCadastrar() {
             :class="{ 'select-erro': enviado && !especialidadesIds.length }" />
           <p v-if="enviado && !especialidadesIds.length" class="erro-texto">Selecione ao menos uma especialidade</p>
         </div>
+
+        <Transition name="servicos-expandir">
+          <div v-if="especialidadesIds.length" class="subcategorias-wrapper">
+            <div class="subcategorias-header">
+              <label class="form-rotulo">
+                Subcategorias por especialidade
+                <span class="rotulo-opcional">(opcional)</span>
+              </label>
+            </div>
+
+            <div class="subcategorias-lista">
+              <div v-for="id in especialidadesIds" :key="id" class="subcategoria-bloco">
+                <p class="subcategoria-nome">
+                  {{opcoesEspecialidades.find(e => String(e.value) === id)?.label}}
+                </p>
+
+                <div v-if="(subcategorias[id] ?? []).length" class="chips-lista">
+                  <span v-for="(sub, i) in subcategorias[id]" :key="i" class="chip">
+                    {{ sub }}
+                    <button type="button" class="chip-remover" @click="removerSubcategoria(id, i)"
+                      :aria-label="`Remover ${sub}`">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+                    </button>
+                  </span>
+                </div>
+
+                <div class="subcategoria-input-row">
+                  <input type="text" class="form-input subcategoria-input" placeholder="Ex.: Residencial, Industrial..."
+                    v-model="inputSubcategorias[id]" @keydown="onInputSubcategoriaKeydown(id, $event)"
+                    @blur="onBlurSubcategoria(id)" @focus="onFocusSubcategoria(id)" autocomplete="off" />
+                  <button type="button" class="btn-add-sub" @click="adicionarSubcategoria(id)"
+                    :disabled="!(inputSubcategorias[id] ?? '').trim()" aria-label="Adicionar subcategoria">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+                <p v-if="inputsAbandonados[id]" class="dica-texto">
+                  Clique em <strong>+</strong> para adicionar
+                </p>
+              </div>
+            </div>
+          </div>
+        </Transition>
 
         <div class="form-grupo">
           <label class="form-rotulo">Descrição profissional</label>
@@ -722,6 +820,128 @@ function handleCadastrar() {
   font-size: 0.72rem;
   color: var(--color-neutral-light-dark);
   font-weight: 500;
+}
+
+.subcategorias-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-neutral-light-lightest, #f8f8fc);
+  border: 1.5px solid var(--color-neutral-light-light);
+  border-radius: 12px;
+}
+
+.subcategorias-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
+.subcategorias-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.subcategoria-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--color-neutral-light-light);
+}
+
+.subcategoria-bloco:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.subcategoria-nome {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-neutral-darkest);
+}
+
+.chips-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem 0.2rem 0.65rem;
+  background: var(--color-primary-medium);
+  color: white;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.chip-remover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  cursor: pointer;
+  color: white;
+  flex-shrink: 0;
+  transition: background 0.18s ease;
+}
+
+.chip-remover:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.subcategoria-input-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.subcategoria-input {
+  flex: 1;
+  height: 36px;
+  font-size: 0.78rem;
+}
+
+.subcategoria-input:focus {
+  transform: none;
+}
+
+.btn-add-sub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-primary-medium);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-primary-medium);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-add-sub:hover:not(:disabled) {
+  background: var(--color-primary-medium);
+  color: white;
+  transform: scale(1.05);
+}
+
+.btn-add-sub:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .toggle-wrapper {

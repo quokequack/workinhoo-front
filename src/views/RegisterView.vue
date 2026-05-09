@@ -5,6 +5,7 @@ import AppSidebar from '@/components/layout/AppSidebar.vue'
 import StepIndicator from '@/components/register/StepIndicator.vue'
 import StepDadosPessoais from '@/components/register/StepDadosPessoais.vue'
 import StepServicos from '@/components/register/StepServicos.vue'
+import AccountCreatedModal from '@/components/register/AccountCreatedModal.vue'
 import api from '@/services/api'
 
 interface DadosPessoais {
@@ -25,7 +26,7 @@ interface Servicos {
     atende_cidade_toda: boolean
     latitude: number | null
     longitude: number | null
-    especialidades: Record<number, string[]>
+    especialidades: Record<string, string[]>
     bairros: number[]
   } | null
 }
@@ -37,6 +38,7 @@ const carregandoInicial = ref(true)
 const router = useRouter()
 const carregando = ref(false)
 const erroGlobal = ref<string | null>(null)
+const mostrarModalSucesso = ref(false)
 
 const CHAVE_FORM = 'cadastro_form'
 const CHAVE_STEP = 'cadastro_step'
@@ -162,30 +164,34 @@ async function handleCadastrar(servicos: Servicos) {
 
     if (servicos.is_prestador && servicos.prestador) {
       const p = servicos.prestador
+
       formPayload.append('prestador[descricao]', p.descricao)
       formPayload.append('prestador[instagram]', p.instagram ?? '')
       formPayload.append('prestador[cidade_id]', String(p.cidade_id))
       formPayload.append('prestador[atende_cidade_toda]', p.atende_cidade_toda ? '1' : '0')
       if (p.latitude !== null) formPayload.append('prestador[latitude]', String(p.latitude))
       if (p.longitude !== null) formPayload.append('prestador[longitude]', String(p.longitude))
-      formPayload.append(
-        'prestador[especialidades_json]',
-        JSON.stringify(p.especialidades)
-      )
+      Object.entries(p.especialidades).forEach(([id, subcats]) => {
+        if (subcats.length === 0) {
+          formPayload.append(`prestador[especialidades][${id}][0]`, '[]')
+        } else {
+          subcats.forEach((sub, i) => {
+            formPayload.append(`prestador[especialidades][${id}][${i}]`, sub)
+          })
+        }
+      })
       p.bairros.forEach((b, i) => {
         formPayload.append(`prestador[bairros][${i}]`, String(b))
       })
     }
 
     await api.get('/sanctum/csrf-cookie')
-
     await api.post('api/signup', formPayload, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
 
     limparSession()
-
-    router.push('/entrar')
+    mostrarModalSucesso.value = true 
   } catch (err: unknown) {
     const axiosErr = err as { response?: { data?: { message?: string } } }
     erroGlobal.value =
@@ -193,6 +199,11 @@ async function handleCadastrar(servicos: Servicos) {
   } finally {
     carregando.value = false
   }
+}
+
+function irParaInicio() {
+  mostrarModalSucesso.value = false
+  router.push('/')
 }
 
 function voltar() {
@@ -259,6 +270,8 @@ onBeforeRouteLeave(() => limparSession())
         </Transition>
       </div>
     </main>
+
+    <AccountCreatedModal :aberto="mostrarModalSucesso" @ir-inicio="irParaInicio" />
   </div>
 </template>
 
