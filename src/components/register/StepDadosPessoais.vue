@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, computed, nextTick, watch } from 'vue'
+import { reactive, ref, computed, nextTick, watch, onUnmounted } from 'vue'
 import ModalCropFoto from '@/components/register/ModalCropFoto.vue'
 
 interface DadosPessoais {
@@ -27,10 +27,15 @@ const senhaVisivel = ref(false)
 const confirmarVisivel = ref(false)
 const enviado = ref(false)
 const agitando = ref(false)
-const tocado = reactive({ contato: false, email: false, confirmarSenha: false, senha: false })
+const tocado = reactive({
+  contato: false,
+  email: false,
+  confirmarSenha: false,
+  senha: false,
+})
 const entrou = ref(false)
-const fotoPreview = ref<string | null>(null)
 
+const fotoPreview = ref<string | null>(null)
 const modalCropAberto = ref(false)
 const imagemBruta = ref<string | null>(null)
 const inputFotoRef = ref<HTMLInputElement | null>(null)
@@ -43,14 +48,22 @@ const requisitos = computed(() => ({
   tamanho: form.senha.length >= 8,
 }))
 
-const senhaForte = computed(() => Object.values(requisitos.value).every(Boolean))
-
-const mostrarRequisitos = computed(() =>
-  (tocado.senha || enviado.value) && !!form.senha && !senhaForte.value
+const senhaForte = computed(() =>
+  Object.values(requisitos.value).every(Boolean),
 )
 
-const senhasErro = computed(() =>
-  (enviado.value || tocado.confirmarSenha) && !!form.confirmarSenha && form.senha !== form.confirmarSenha
+const mostrarRequisitos = computed(
+  () =>
+    (tocado.senha || enviado.value) &&
+    !!form.senha &&
+    !senhaForte.value,
+)
+
+const senhasErro = computed(
+  () =>
+    (enviado.value || tocado.confirmarSenha) &&
+    !!form.confirmarSenha &&
+    form.senha !== form.confirmarSenha,
 )
 
 function onAnimacaoEntrar() {
@@ -84,10 +97,12 @@ function handleProximo() {
 function aplicarMascara(
   input: HTMLInputElement,
   formatar: (digits: string) => string,
-  setter: (v: string) => void
+  setter: (v: string) => void,
 ) {
   const cursorAntes = input.selectionStart ?? 0
-  const digitosAntes = input.value.slice(0, cursorAntes).replace(/\D/g, '').length
+  const digitosAntes = input.value
+    .slice(0, cursorAntes)
+    .replace(/\D/g, '').length
 
   const digits = input.value.replace(/\D/g, '')
   const formatado = formatar(digits)
@@ -99,7 +114,10 @@ function aplicarMascara(
     for (let i = 0; i < formatado.length; i++) {
       const char = formatado[i] ?? ''
       if (/\d/.test(char)) digitosContados++
-      if (digitosContados === digitosAntes) { novoCursor = i + 1; break }
+      if (digitosContados === digitosAntes) {
+        novoCursor = i + 1
+        break
+      }
       novoCursor = i + 1
     }
     input.setSelectionRange(novoCursor, novoCursor)
@@ -108,13 +126,24 @@ function aplicarMascara(
 
 function formatarTelefone(digits: string): string {
   const d = digits.slice(0, 11)
-  if (d.length > 7) return d.replace(/^(\d{2})(\d{5})(\d{1,4})$/, '($1) $2-$3')
-  if (d.length > 2) return d.replace(/^(\d{2})(\d+)$/, '($1) $2')
+  if (d.length > 7)
+    return d.replace(
+      /^(\d{2})(\d{5})(\d{1,4})$/,
+      '($1) $2-$3',
+    )
+  if (d.length > 2)
+    return d.replace(/^(\d{2})(\d+)$/, '($1) $2')
   return d
 }
 
 function mascaraContato(e: Event) {
-  aplicarMascara(e.target as HTMLInputElement, formatarTelefone, v => { form.contato = v })
+  aplicarMascara(
+    e.target as HTMLInputElement,
+    formatarTelefone,
+    v => {
+      form.contato = v
+    },
+  )
 }
 
 function emailValido(email: string): boolean {
@@ -126,23 +155,36 @@ function contatoValido(tel: string): boolean {
   return d.length === 10 || d.length === 11
 }
 
+function liberarObjectURL(url: string | null) {
+  if (url) URL.revokeObjectURL(url)
+}
+
 function handleFoto(e: Event) {
-  const arquivo = (e.target as HTMLInputElement).files?.[0]
+  const input = e.target as HTMLInputElement
+  const arquivo = input.files?.[0]
   if (!arquivo) return
-    ; (e.target as HTMLInputElement).value = ''
+
+  input.value = ''
+
+  liberarObjectURL(imagemBruta.value)
   imagemBruta.value = URL.createObjectURL(arquivo)
   modalCropAberto.value = true
 }
 
 function onCropConfirmado(file: File) {
   form.foto = file
+
+  liberarObjectURL(fotoPreview.value)
   fotoPreview.value = URL.createObjectURL(file)
+
   modalCropAberto.value = false
+  liberarObjectURL(imagemBruta.value)
   imagemBruta.value = null
 }
 
 function onCropFechado() {
   modalCropAberto.value = false
+  liberarObjectURL(imagemBruta.value)
   imagemBruta.value = null
 }
 
@@ -152,30 +194,41 @@ function abrirSeletorFoto() {
 
 function removerFoto() {
   form.foto = null
+  liberarObjectURL(fotoPreview.value)
   fotoPreview.value = null
 }
 
 watch(
   () => props.fotoB64,
-  (b64) => {
+  b64 => {
     if (b64 && !fotoPreview.value) {
       fotoPreview.value = b64
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 watch(
   () => props.dados.foto,
-  (foto) => {
+  foto => {
     if (foto instanceof File && !fotoPreview.value) {
+      liberarObjectURL(fotoPreview.value)
       fotoPreview.value = URL.createObjectURL(foto)
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
-watch(form, (v) => emit('atualizar', { ...v }), { deep: true })
+watch(
+  form,
+  v => emit('atualizar', { ...v }),
+  { deep: true },
+)
+
+onUnmounted(() => {
+  liberarObjectURL(fotoPreview.value)
+  liberarObjectURL(imagemBruta.value)
+})
 </script>
 
 <template>
