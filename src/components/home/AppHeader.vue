@@ -137,13 +137,6 @@ header .logo {
     font-family: Poppins;
     font-weight: 600;
     font-size: 0.9rem;
-}
-
-.btn-entrar {
-    color: var(--color-neutral-dark);
-    font-family: Poppins;
-    font-weight: 600;
-    font-size: 0.9rem;
     position: relative;
     text-decoration: none;
 }
