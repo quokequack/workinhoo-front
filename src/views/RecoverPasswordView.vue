@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import AppSidebar from '@/components/shared/AppSidebar.vue'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
 import RecoverStepIndicator from '@/components/recover/RecoverStepIndicator.vue'
 import VerifyCodeModal from '@/components/recover/VerifyCodeModal.vue'
 import ResetSuccessModal from '@/components/recover/ResetSuccessModal.vue'

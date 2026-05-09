@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { useRouter, onBeforeRouteLeave } from 'vue-router'
-import AppSidebar from '@/components/shared/AppSidebar.vue'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
 import StepIndicator from '@/components/register/StepIndicator.vue'
 import StepDadosPessoais from '@/components/register/StepDadosPessoais.vue'
 import StepServicos from '@/components/register/StepServicos.vue'

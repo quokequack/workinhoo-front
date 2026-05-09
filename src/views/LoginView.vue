@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import AppSidebar from '@/components/shared/AppSidebar.vue'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
 import api from '@/services/api'
 
 const router = useRouter()
