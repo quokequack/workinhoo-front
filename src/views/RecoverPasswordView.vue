@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import RecoverStepIndicator from '@/components/recover/RecoverStepIndicator.vue'
 import VerifyCodeModal from '@/components/recover/VerifyCodeModal.vue'
 import ResetSuccessModal from '@/components/recover/ResetSuccessModal.vue'
+
+const router = useRouter()
 
 const stepAtual = ref(1)
 
@@ -101,7 +104,7 @@ function voltarStep1() {
 }
 
 function irParaLogin() {
-  window.location.href = '/entrar'
+  router.push('/entrar')
 }
 </script>
 
