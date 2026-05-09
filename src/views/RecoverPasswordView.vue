@@ -150,7 +150,7 @@ function irParaLogin() {
                 novalidate>
                 <div class="form-grupo">
                   <label class="form-rotulo">Email</label>
-                  <input v-model="form.email" type="email" class="form-input" placeholder="joao123@gmail.com"
+                  <input v-model="form.email" type="email" class="form-input" placeholder="seu@gmail.com"
                     autocomplete="email" @blur="tocado.email = true" :class="{
                       'input-erro':
                         (enviado && !form.email) ||
