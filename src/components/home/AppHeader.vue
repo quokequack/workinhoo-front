@@ -139,6 +139,31 @@ header .logo {
     font-size: 0.9rem;
 }
 
+.btn-entrar {
+    color: var(--color-neutral-dark);
+    font-family: Poppins;
+    font-weight: 600;
+    font-size: 0.9rem;
+    position: relative;
+    text-decoration: none;
+}
+
+.btn-entrar::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 0%;
+    height: 2px;
+    background-color: var(--color-primary-medium);
+    border-radius: 2px;
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-entrar:hover::after {
+    width: 100%;
+}
+
 .btn-cadastrar {
     background-color: var(--color-primary-medium);
     color: var(--color-neutral-light-lightest);
