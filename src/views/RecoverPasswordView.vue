@@ -6,6 +6,11 @@ import RecoverStepIndicator from '@/components/recover/RecoverStepIndicator.vue'
 import VerifyCodeModal from '@/components/recover/VerifyCodeModal.vue'
 import ResetSuccessModal from '@/components/recover/ResetSuccessModal.vue'
 
+import {
+  enviarCodigoRecuperacao,
+  validarCodigoRecuperacao
+} from '@/services/recuperacaoSenha'
+
 const router = useRouter()
 
 const stepAtual = ref(1)
@@ -25,14 +30,18 @@ const confirmarVisivel = ref(false)
 const modalCodigoAberto = ref(false)
 const modalSucessoAberto = ref(false)
 
+const carregando = ref(false)
+
 const modalRef = ref<InstanceType<typeof VerifyCodeModal> | null>(null)
+
+const erroEmailServidor = ref('')
 
 const requisitos = computed(() => ({
   maiuscula: /[A-Z]/.test(form.senha),
   minuscula: /[a-z]/.test(form.senha),
   numero: /[0-9]/.test(form.senha),
   especial: /[^A-Za-z0-9]/.test(form.senha),
-  tamanho: form.senha.length >= 8,
+  tamanho: form.senha.length >= 8
 }))
 
 const senhaForte = computed(() => Object.values(requisitos.value).every(Boolean))
@@ -56,7 +65,12 @@ function validarEmail() {
 }
 
 function validarSenha() {
-  return !!form.senha && senhaForte.value && !!form.confirmarSenha && !senhasErro.value
+  return (
+    !!form.senha &&
+    senhaForte.value &&
+    !!form.confirmarSenha &&
+    !senhasErro.value
+  )
 }
 
 function agitar() {
@@ -69,32 +83,113 @@ function resetarEstado() {
   tocado.email = false
   tocado.senha = false
   tocado.confirmarSenha = false
+  erroEmailServidor.value = ''
 }
 
-function enviarCodigo() {
+function extrairMensagemErro(err: any, fallback: string) {
+  const data = err?.response?.data
+  const status = err?.response?.status
+
+  if (typeof data === 'string' && data.trim()) return data.trim()
+
+  const msg = data?.message
+  if (typeof msg === 'string' && msg.trim()) return msg.trim()
+
+  const errors = data?.errors
+  if (status === 422 && errors && typeof errors === 'object') {
+    for (const key of Object.keys(errors)) {
+      const arr = errors[key]
+      if (Array.isArray(arr) && typeof arr[0] === 'string' && arr[0].trim()) {
+        return arr[0].trim()
+      }
+    }
+    return fallback
+  }
+
+  if (typeof err?.message === 'string' && err.message.trim()) return err.message.trim()
+
+  return fallback
+}
+
+async function enviarCodigo() {
   enviado.value = true
-  if (!validarEmail()) { agitar(); return }
-  modalCodigoAberto.value = true
-}
+  erroEmailServidor.value = ''
 
-async function confirmarCodigo(codigo: string) {
-  const ok = codigo === '123456'
-  if (!ok) { modalRef.value?.toastErro(); return }
-  modalRef.value?.toastSucesso()
-  setTimeout(() => {
+  if (!validarEmail()) {
+    agitar()
+    return
+  }
+
+  try {
+    carregando.value = true
+
+    await enviarCodigoRecuperacao(form.email)
+
+    modalCodigoAberto.value = true
+    setTimeout(() => {
+      modalRef.value?.limparEstado()
+      modalRef.value?.toastReenviado('Código enviado para e-mail cadastrado.')
+    }, 0)
+  } catch (err: any) {
+    agitar()
     modalCodigoAberto.value = false
-    resetarEstado()
-    stepAtual.value = 2
-  }, 450)
+    erroEmailServidor.value = extrairMensagemErro(err, 'Não foi possível enviar o código.')
+  } finally {
+    carregando.value = false
+  }
 }
 
-function reenviarCodigo() {
-  modalRef.value?.toastReenviado()
+async function confirmarCodigo(token: string) {
+  try {
+    carregando.value = true
+
+    const resp = await validarCodigoRecuperacao(token)
+    const sucessoMsg =
+      typeof resp?.data?.message === 'string' && resp.data.message.trim()
+        ? resp.data.message.trim()
+        : 'Código validado com sucesso.'
+
+    modalRef.value?.toastSucesso(sucessoMsg)
+
+    setTimeout(() => {
+      modalCodigoAberto.value = false
+      resetarEstado()
+      stepAtual.value = 2
+    }, 450)
+  } catch (err: any) {
+    const msg = extrairMensagemErro(err, 'O código informado é inválido ou expirou.')
+    setTimeout(() => {
+      modalRef.value?.toastErro(msg)
+    }, 0)
+  } finally {
+    carregando.value = false
+  }
+}
+
+async function reenviarCodigo() {
+  if (!validarEmail()) {
+    agitar()
+    return
+  }
+
+  try {
+    carregando.value = true
+    await enviarCodigoRecuperacao(form.email)
+    modalRef.value?.toastReenviado('Código reenviado para seu email.')
+  } catch (err: any) {
+    const msg = extrairMensagemErro(err, 'Não foi possível reenviar o código. Tente novamente.')
+    modalRef.value?.toastErro(msg)
+  } finally {
+    carregando.value = false
+  }
 }
 
 function redefinirSenha() {
   enviado.value = true
-  if (!validarSenha()) { agitar(); return }
+  if (!validarSenha()) {
+    agitar()
+    return
+  }
   modalSucessoAberto.value = true
 }
 
@@ -142,7 +237,6 @@ function irParaLogin() {
 
         <div class="form-container">
           <Transition name="step" mode="out-in">
-
             <section v-if="stepAtual === 1" key="step1">
               <div class="form-cabecalho">
                 <h1 class="form-titulo">Verifique seu email</h1>
@@ -156,12 +250,16 @@ function irParaLogin() {
                   <input v-model="form.email" type="email" class="form-input" placeholder="seu@gmail.com"
                     autocomplete="email" @blur="tocado.email = true" :class="{
                       'input-erro':
+                        !!erroEmailServidor ||
                         (enviado && !form.email) ||
                         ((enviado || tocado.email) && form.email && !emailValido(form.email))
                     }" />
                   <p v-if="enviado && !form.email" class="erro-texto">Campo obrigatório</p>
                   <p v-else-if="(enviado || tocado.email) && form.email && !emailValido(form.email)" class="erro-texto">
                     Email inválido
+                  </p>
+                  <p v-else-if="erroEmailServidor" class="erro-texto">
+                    {{ erroEmailServidor }}
                   </p>
                 </div>
 
@@ -291,14 +389,13 @@ function irParaLogin() {
                 </button>
               </form>
             </section>
-
           </Transition>
         </div>
       </div>
     </main>
 
-    <VerifyCodeModal ref="modalRef" :aberto="modalCodigoAberto" :email="form.email" @fechar="modalCodigoAberto = false"
-      @confirmar="confirmarCodigo" @reenviar="reenviarCodigo" />
+    <VerifyCodeModal ref="modalRef" :aberto="modalCodigoAberto" :email="form.email" :carregando="carregando"
+      @fechar="modalCodigoAberto = false" @confirmar="confirmarCodigo" @reenviar="reenviarCodigo" />
 
     <ResetSuccessModal :aberto="modalSucessoAberto" @fechar="modalSucessoAberto = false" @irLogin="irParaLogin" />
   </div>

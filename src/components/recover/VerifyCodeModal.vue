@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import RecoverToast from '@/components/recover/RecoverToast.vue'
 
 const props = defineProps<{
@@ -17,8 +17,88 @@ const emit = defineEmits<{
 const state = reactive({ codigo: '' })
 const tocado = ref(false)
 
-const codigoLimpo = computed(() => state.codigo.replace(/\D/g, '').slice(0, 6))
-const codigoValido = computed(() => codigoLimpo.value.length === 6)
+function normalizarToken(valor: string) {
+  return valor.toLowerCase().replace(/[^a-f0-9]/g, '').slice(0, 8)
+}
+
+const codigoLimpo = computed(() => normalizarToken(state.codigo))
+const codigoValido = computed(() => /^[a-f0-9]{8}$/.test(codigoLimpo.value))
+
+watch(
+  () => props.aberto,
+  (aberto) => {
+    if (aberto) {
+      state.codigo = ''
+      tocado.value = false
+    }
+  }
+)
+
+function inserirTextoNoCursor(input: HTMLInputElement, texto: string) {
+  const start = input.selectionStart ?? input.value.length
+  const end = input.selectionEnd ?? input.value.length
+  const antes = input.value.slice(0, start)
+  const depois = input.value.slice(end)
+  const novo = (antes + texto + depois).slice(0, 8)
+  state.codigo = normalizarToken(novo)
+
+  requestAnimationFrame(() => {
+    const pos = Math.min(start + texto.length, state.codigo.length)
+    input.setSelectionRange(pos, pos)
+  })
+}
+
+function onBeforeInput(e: InputEvent) {
+  const input = e.target as HTMLInputElement
+  const data = e.data ?? ''
+
+  if (!data) return
+
+  const start = input.selectionStart ?? input.value.length
+  const end = input.selectionEnd ?? input.value.length
+  const selecionado = end - start
+  const tamanhoApos = input.value.length - selecionado
+
+  if (tamanhoApos >= 8) {
+    e.preventDefault()
+    return
+  }
+
+  if (!/^[0-9a-fA-F]+$/.test(data)) {
+    e.preventDefault()
+    return
+  }
+
+  const lower = data.toLowerCase()
+  if (lower !== data) {
+    e.preventDefault()
+    inserirTextoNoCursor(input, lower)
+  }
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.ctrlKey || e.metaKey || e.altKey) return
+
+  const k = e.key
+  const allowedControl = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Tab']
+  if (allowedControl.includes(k)) return
+
+  if (k.length === 1 && !/^[0-9a-fA-F]$/.test(k)) {
+    e.preventDefault()
+  }
+}
+
+function onInput(e: Event) {
+  const input = e.target as HTMLInputElement
+  state.codigo = normalizarToken(input.value)
+}
+
+function onPaste(e: ClipboardEvent) {
+  e.preventDefault()
+  const input = e.target as HTMLInputElement
+  const texto = e.clipboardData?.getData('text') ?? ''
+  inserirTextoNoCursor(input, normalizarToken(texto))
+}
 
 type ToastType = 'erro' | 'info' | 'sucesso'
 const toastAberto = ref(false)
@@ -35,29 +115,43 @@ function fecharToast() {
   toastAberto.value = false
 }
 
-function onInput(e: Event) {
-  state.codigo = (e.target as HTMLInputElement).value
-}
-
 function confirmar() {
   tocado.value = true
+
   if (!codigoValido.value) {
-    abrirToast('erro', 'Código inválido. Tente novamente.')
     return
   }
+
   emit('confirmar', codigoLimpo.value)
 }
 
 function reenviar() {
   emit('reenviar')
-  abrirToast('info', 'Código reenviado para seu email.')
 }
 
-function toastSucesso() { abrirToast('sucesso', 'Código validado com sucesso.') }
-function toastErro() { abrirToast('erro', 'Código inválido. Tente novamente.') }
-function toastReenviado() { abrirToast('info', 'Código reenviado para seu email.') }
+function toastSucesso(mensagem?: string) {
+  abrirToast('sucesso', mensagem ?? 'Código validado com sucesso.')
+}
 
-defineExpose({ toastSucesso, toastErro, toastReenviado })
+function toastErro(mensagem?: string) {
+  abrirToast('erro', mensagem ?? 'Código inválido. Tente novamente.')
+}
+
+function toastReenviado(mensagem?: string) {
+  abrirToast('info', mensagem ?? 'Código reenviado para seu email.')
+}
+
+function limparEstado() {
+  state.codigo = ''
+  tocado.value = false
+}
+
+defineExpose({
+  toastSucesso,
+  toastErro,
+  toastReenviado,
+  limparEstado
+})
 </script>
 
 <template>
@@ -69,9 +163,8 @@ defineExpose({ toastSucesso, toastErro, toastReenviado })
 
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="aberto" class="modal-overlay" @click.self="emit('fechar')">
+      <div v-if="aberto" class="modal-overlay">
         <div class="modal-card" role="dialog" aria-modal="true" aria-label="Verifique seu email">
-
           <button class="btn-fechar" type="button" aria-label="Fechar" @click="emit('fechar')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
@@ -89,10 +182,15 @@ defineExpose({ toastSucesso, toastErro, toastReenviado })
 
           <div class="form-grupo">
             <label class="form-rotulo">Código de verificação</label>
-            <input :value="state.codigo" @input="onInput" @blur="tocado = true" class="form-input" inputmode="numeric"
-              autocomplete="one-time-code" placeholder="— — — — — —"
-              :class="{ 'input-erro': tocado && !codigoValido }" />
-            <p v-if="tocado && !codigoValido" class="erro-texto">Informe um código com 6 dígitos</p>
+
+            <input :value="codigoLimpo" @beforeinput="onBeforeInput" @keydown="onKeydown" @input="onInput"
+              @paste="onPaste" @blur="tocado = true" class="form-input" autocomplete="one-time-code"
+              placeholder="— — — — — — — —" :class="{ 'input-erro': tocado && !codigoValido }" maxlength="8"
+              autocapitalize="none" spellcheck="false" />
+
+            <p v-if="tocado && !codigoValido" class="erro-texto">
+              Informe um token com 8 caracteres.
+            </p>
           </div>
 
           <div class="form-acoes">
@@ -113,7 +211,6 @@ defineExpose({ toastSucesso, toastErro, toastReenviado })
               Reenviar código
             </button>
           </div>
-
         </div>
       </div>
     </Transition>
