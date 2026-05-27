@@ -11,7 +11,7 @@ const categoriasPopulares = [
 
 <template>
   <footer class="logged-footer">
-    <div class="logged-footer__container">
+    <div class="logged-footer__content">
       <section class="logged-footer__brand">
         <h2>Workinhoo</h2>
         <p>Conectando você a profissionais locais.</p>
@@ -40,7 +40,7 @@ const categoriasPopulares = [
 
       <section class="logged-footer__column">
         <h3>Contato</h3>
-        <p>workinhoo@gmail.com</p>
+        <p class="logged-footer__contact">workinhoo@gmail.com</p>
       </section>
     </div>
 
@@ -52,63 +52,130 @@ const categoriasPopulares = [
 
 <style scoped>
 .logged-footer {
-  background-color: var(--color-neutral-darkest);
-  color: var(--color-neutral-light-white);
-  padding-top: 3rem;
+  width: 100%;
+  padding: 4rem 4rem 2rem;
+  background: #161d27;
+  color: #fff;
+  font-family: Poppins, sans-serif;
 }
 
-.logged-footer__container,
-.logged-footer__bottom {
-  width: min(90%, 75rem);
+.logged-footer__content {
+  width: 100%;
+  max-width: 82rem;
   margin: 0 auto;
+  display: grid;
+  grid-template-columns: 18.4375rem 1fr 1fr 1fr;
+  align-items: start;
+  column-gap: 4rem;
 }
 
-.logged-footer__container {
-  display: grid;
-  gap: 1rem;
-  padding-bottom: 2rem;
+.logged-footer__brand,
+.logged-footer__column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.logged-footer__brand {
+  gap: 0.75rem;
+}
+
+.logged-footer__column {
+  gap: 0.75rem;
+}
+
+.logged-footer__brand h2,
+.logged-footer__column h3,
+.logged-footer__brand p,
+.logged-footer__column ul,
+.logged-footer__column li,
+.logged-footer__column a,
+.logged-footer__contact,
+.logged-footer__bottom p {
+  margin: 0;
 }
 
 .logged-footer__brand h2,
 .logged-footer__column h3 {
-  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.logged-footer__brand p,
+.logged-footer__contact {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 2rem;
 }
 
 .logged-footer__column ul {
   list-style: none;
   padding: 0;
-  margin: 0;
-}
-
-.logged-footer__column li + li {
-  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
 }
 
 .logged-footer__column a {
-  color: var(--color-neutral-light-white);
+  color: #fff;
   text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: normal;
 }
 
 .logged-footer__bottom {
-  border-top: 1px solid #ffffff20;
-  padding: 1.25rem 0 2rem;
+  width: 100%;
+  margin-top: 5rem;
+  padding: 1.5rem 3.5rem 0;
+  border-top: 2px solid #fff;
 }
 
 .logged-footer__bottom p {
-  text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 2.8125rem;
+  text-align: left;
 }
 
-@media (min-width: 768px) {
-  .logged-footer__container {
+@media (max-width: 1024px) {
+  .logged-footer {
+    padding: 3rem 2rem 2rem;
+  }
+
+  .logged-footer__content {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 2.5rem;
+    column-gap: 3rem;
+  }
+
+  .logged-footer__brand {
+    max-width: 18.4375rem;
+  }
+
+  .logged-footer__bottom {
+    margin-top: 3rem;
+    padding: 1.5rem 0 0;
   }
 }
 
-@media (min-width: 1024px) {
-  .logged-footer__container {
-    grid-template-columns: 1.2fr 1fr 1fr 0.9fr;
-    align-items: start;
+@media (max-width: 768px) {
+  .logged-footer {
+    padding: 2.5rem 1.5rem 1.5rem;
+  }
+
+  .logged-footer__content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .logged-footer__bottom {
+    margin-top: 2.5rem;
+  }
+
+  .logged-footer__bottom p {
+    line-height: 1.8rem;
   }
 }
 </style>
