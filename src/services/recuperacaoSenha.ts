@@ -12,5 +12,5 @@ export async function validarCodigoRecuperacao(codigo: string) {
 
 export async function alterarSenha(senha: string) {
     await api.get('/sanctum/csrf-cookie')
-    return api.post('recuperar-senha/alterar', { senha })
+    return api.post('/recuperar-senha/alterar', { senha })
 }
