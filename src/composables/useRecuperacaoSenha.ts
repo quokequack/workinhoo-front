@@ -109,10 +109,10 @@ export function useRecuperacaoSenha() {
         }
     }
 
-    async function confirmarCodigo(token: string) {
+    async function confirmarCodigo(codigo: string) {
         try {
             carregando.value = true
-            const resp = await validarCodigoRecuperacao(token)
+            const resp = await validarCodigoRecuperacao(codigo)
             const sucessoMsg =
                 typeof resp?.data?.message === 'string' && resp.data.message.trim()
                     ? resp.data.message.trim()
