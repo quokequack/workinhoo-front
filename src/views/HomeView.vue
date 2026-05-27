@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
+import AppHeader from '@/components/home/AppHeader.vue'
+import AppFooter from '@/components/home/AppFooter.vue'
 import pintorImg from '@/assets/images/pintor.jpg'
 import eletristaImg from '@/assets/images/eletricista.jpg'
 import daristaImg from '@/assets/images/diarista.jpg'
@@ -7,16 +9,6 @@ import mecanicoImg from '@/assets/images/mecanico.jpg'
 import tatuadorImg from '@/assets/images/tatuador.jpg'
 import encanadorImg from '@/assets/images/encanador.jpg'
 import pedreiroImg from '@/assets/images/pedreiro.jpg'
-
-const menuAberto = ref(false)
-
-function toggleMenu() {
-  menuAberto.value = !menuAberto.value
-}
-
-function fecharMenu() {
-  menuAberto.value = false
-}
 
 onMounted(() => {
   const observer = new IntersectionObserver(
@@ -36,69 +28,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <header>
-    <div class="logo">
-      <h1>Workinhoo</h1>
-    </div>
-
-    <div class="menu-nav">
-      <nav>
-        <ul>
-          <li><a href="#sobre">Sobre</a></li>
-          <li><a href="#como-funciona">Como funciona</a></li>
-          <li><a href="#servicos">Serviços</a></li>
-        </ul>
-      </nav>
-    </div>
-
-    <div class="menu-login">
-      <router-link to="/entrar" class="btn-entrar">Entrar</router-link>
-      <router-link to="/cadastrar" class="btn-cadastrar">Cadastrar</router-link>
-    </div>
-
-    <button class="hamburger" :class="{ 'hamburger--ativo': menuAberto }" @click="toggleMenu" aria-label="Abrir menu">
-      <span class="hamburger__linha"></span>
-      <span class="hamburger__linha"></span>
-      <span class="hamburger__linha"></span>
-    </button>
-  </header>
-
-  <Transition name="overlay">
-    <div v-if="menuAberto" class="menu-overlay" @click="fecharMenu"></div>
-  </Transition>
-
-  <Transition name="drawer">
-    <div v-if="menuAberto" class="menu-drawer">
-      <div class="drawer-logo">
-        <h2>Workinhoo</h2>
-        <button class="drawer-fechar" @click="fecharMenu" aria-label="Fechar menu">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
-          </svg>
-        </button>
-      </div>
-
-      <nav class="drawer-nav">
-        <a href="#sobre" class="drawer-link" @click="fecharMenu">
-          <span class="drawer-link__num">01</span>
-          <span class="drawer-link__texto">Sobre</span>
-        </a>
-        <a href="#como-funciona" class="drawer-link" @click="fecharMenu">
-          <span class="drawer-link__num">02</span>
-          <span class="drawer-link__texto">Como funciona</span>
-        </a>
-        <a href="#servicos" class="drawer-link" @click="fecharMenu">
-          <span class="drawer-link__num">03</span>
-          <span class="drawer-link__texto">Serviços</span>
-        </a>
-      </nav>
-
-      <div class="drawer-acoes">
-        <router-link to="/entrar" class="drawer-btn-entrar" @click="fecharMenu">Entrar</router-link>
-        <router-link to="/cadastrar" class="drawer-btn-cadastrar" @click="fecharMenu">Cadastrar</router-link>
-      </div>
-    </div>
-  </Transition>
+  <AppHeader />
 
   <main>
     <section class="criar-conta">
@@ -323,342 +253,10 @@ onMounted(() => {
     </section>
   </main>
 
-  <footer>
-    <div class="footer-content">
-      <div class="logo section reveal">
-        <h1>Workinhoo</h1>
-        <div>
-          <img src="@/assets/icons/toolbox.svg" alt="ícone de caixa de ferramentas" />
-          <p>Conectando você a profissionais locais</p>
-        </div>
-      </div>
-
-      <div class="menu-nav section reveal reveal--delay-1">
-        <h1>Links rápidos</h1>
-        <ul>
-          <li><a href="#sobre">Sobre</a></li>
-          <li><a href="#como-funciona">Como funciona</a></li>
-          <li><a href="#servicos">Serviços</a></li>
-          <li><router-link to="/entrar">Entrar</router-link></li>
-          <li><router-link to="/cadastrar">Cadastrar</router-link></li>
-        </ul>
-      </div>
-
-      <div class="contato section reveal reveal--delay-2">
-        <h1>Contato</h1>
-        <div>
-          <img src="@/assets/icons/mail.svg" alt="ícone de e-mail" />
-          <p>workinhoo@gmail.com</p>
-        </div>
-      </div>
-    </div>
-    <div class="footer-copyright">
-      <p>© 2026 Workinhoo. Todos os direitos reservados.</p>
-    </div>
-  </footer>
+  <AppFooter />
 </template>
 
 <style scoped>
-header {
-  background-color: var(--color-neutral-light-white);
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  height: 5rem;
-  padding: 0 1.25rem;
-  box-shadow: 0px 4px 16px 0px #2A2A2A0D;
-  margin-bottom: 1rem;
-  position: fixed;
-  top: 0;
-  z-index: 100;
-}
-
-header .logo {
-  color: var(--color-primary-medium);
-  font-weight: 700;
-  font-size: 1.2rem;
-}
-
-.menu-nav {
-  display: none;
-}
-
-.menu-login {
-  display: none;
-}
-
-.btn-entrar {
-  color: var(--color-neutral-dark);
-  font-family: Poppins;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.btn-cadastrar {
-  background-color: var(--color-primary-medium);
-  color: var(--color-neutral-light-lightest);
-  font-family: Poppins;
-  padding: 0.5rem 1rem;
-  border-radius: 24px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-}
-
-.btn-cadastrar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(88, 60, 196, 0.35);
-  opacity: 0.92;
-}
-
-.hamburger {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  width: 44px;
-  height: 44px;
-  background: var(--color-primary-medium);
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(88, 60, 196, 0.35);
-  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
-}
-
-.hamburger:active {
-  transform: scale(0.92);
-}
-
-.hamburger:hover {
-  box-shadow: 0 6px 20px rgba(88, 60, 196, 0.5);
-  transform: scale(1.05);
-}
-
-.hamburger__linha {
-  display: block;
-  width: 20px;
-  height: 2px;
-  background: #ffffff;
-  border-radius: 2px;
-  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
-    opacity 0.3s ease,
-    width 0.3s ease;
-  transform-origin: center;
-}
-
-.hamburger--ativo .hamburger__linha:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
-}
-
-.hamburger--ativo .hamburger__linha:nth-child(2) {
-  opacity: 0;
-  transform: scaleX(0);
-}
-
-.hamburger--ativo .hamburger__linha:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
-}
-
-.menu-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(20, 10, 50, 0.45);
-  backdrop-filter: blur(3px);
-  z-index: 200;
-}
-
-.overlay-enter-active,
-.overlay-leave-active {
-  transition: opacity 0.35s ease;
-}
-
-.overlay-enter-from,
-.overlay-leave-to {
-  opacity: 0;
-}
-
-.menu-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: min(80vw, 300px);
-  height: 100dvh;
-  background: var(--color-neutral-light-white);
-  z-index: 300;
-  display: flex;
-  flex-direction: column;
-  padding: 1.75rem 1.5rem 2.5rem;
-  box-shadow: -8px 0 40px rgba(20, 10, 50, 0.18);
-  border-radius: 24px 0 0 24px;
-  overflow: hidden;
-}
-
-.drawer-enter-active {
-  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.drawer-leave-active {
-  transition: transform 0.3s cubic-bezier(0.55, 0, 1, 0.45);
-}
-
-.drawer-enter-from,
-.drawer-leave-to {
-  transform: translateX(100%);
-}
-
-.drawer-logo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2.5rem;
-}
-
-.drawer-logo h2 {
-  color: var(--color-primary-medium);
-  font-weight: 700;
-  font-size: 1.3rem;
-}
-
-.drawer-fechar {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-neutral-dark);
-  padding: 6px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.drawer-fechar:hover {
-  background: #f0eeff;
-  color: var(--color-primary-medium);
-}
-
-.drawer-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.drawer-nav::after {
-  content: '';
-  display: block;
-  height: 1px;
-  background: #ece9f8;
-  margin: 1rem 0;
-}
-
-.drawer-link {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 14px;
-  text-decoration: none;
-  color: var(--color-neutral-dark);
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.2s ease;
-}
-
-.drawer-link::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--color-primary-medium), var(--color-secondary-medium));
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  border-radius: 14px;
-}
-
-.drawer-link:hover::after,
-.drawer-link:active::after {
-  opacity: 1;
-}
-
-.drawer-link:hover .drawer-link__num,
-.drawer-link:hover .drawer-link__texto,
-.drawer-link:active .drawer-link__num,
-.drawer-link:active .drawer-link__texto {
-  color: #ffffff;
-}
-
-.drawer-link:active {
-  transform: scale(0.97);
-}
-
-.drawer-link__num {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--color-primary-medium);
-  letter-spacing: 0.05em;
-  min-width: 24px;
-  position: relative;
-  z-index: 1;
-  transition: color 0.2s ease;
-}
-
-.drawer-link__texto {
-  font-size: 1.05rem;
-  font-weight: 600;
-  position: relative;
-  z-index: 1;
-  transition: color 0.2s ease;
-}
-
-.drawer-acoes {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: auto;
-}
-
-.drawer-btn-entrar {
-  display: block;
-  text-align: center;
-  padding: 0.85rem 1.5rem;
-  border-radius: 14px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--color-primary-medium);
-  border: 2px solid var(--color-primary-medium);
-  text-decoration: none;
-  transition: background 0.2s ease;
-}
-
-.drawer-btn-entrar:hover {
-  background: #f0eeff;
-}
-
-.drawer-btn-cadastrar {
-  display: block;
-  text-align: center;
-  padding: 0.85rem 1.5rem;
-  border-radius: 14px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  background: var(--color-primary-medium);
-  color: #ffffff;
-  text-decoration: none;
-  box-shadow: 0 4px 14px rgba(88, 60, 196, 0.35);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.drawer-btn-cadastrar:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
 main {
   padding-top: 5rem;
 }
@@ -1310,120 +908,6 @@ main {
   transform: translateX(4px);
 }
 
-footer {
-  background-color: var(--color-neutral-darkest);
-  color: var(--color-neutral-light-white);
-  margin-top: 2rem;
-}
-
-.footer-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  width: 90%;
-  padding: 3rem 0;
-  margin: 0 auto;
-}
-
-.footer-content .section {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-footer .logo div {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.75rem;
-}
-
-footer .logo div img {
-  width: 26px;
-  height: 26px;
-}
-
-footer .logo div p {
-  font-size: 0.9rem;
-  width: 70%;
-}
-
-footer .menu-nav ul {
-  list-style-position: inside;
-  padding: 0;
-  margin-top: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-footer .menu-nav ul a {
-  color: var(--color-neutral-light-white);
-  font-size: 0.9rem;
-  transition: color 0.2s ease, transform 0.2s ease;
-  display: inline-block;
-}
-
-footer .menu-nav ul a:hover {
-  color: var(--color-secondary-medium);
-  transform: translateX(4px);
-}
-
-footer .contato div img {
-  width: 26px;
-  height: 26px;
-}
-
-footer .contato div {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.75rem;
-}
-
-.footer-copyright {
-  border-top: 1px solid var(--color-neutral-light-white);
-  padding: 1.5rem 0;
-}
-
-.footer-copyright p {
-  font-size: 0.85rem;
-  width: 90%;
-  margin: 0 auto;
-  text-align: center;
-}
-
-/* ============================================
-   NAV LINKS — underline animado
-   ============================================ */
-
-.menu-nav nav ul a {
-  position: relative;
-  text-decoration: none;
-}
-
-.menu-nav nav ul a::after {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  left: 0;
-  width: 0%;
-  height: 2px;
-  background-color: var(--color-primary-medium);
-  border-radius: 2px;
-  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.menu-nav nav ul a:hover::after {
-  width: 100%;
-}
-
-/* ============================================
-   SCROLL REVEAL
-   ============================================ */
-
 .reveal {
   opacity: 0;
   transform: translateY(32px);
@@ -1452,10 +936,6 @@ footer .contato div {
   transition-delay: 0.4s;
 }
 
-/* ============================================
-   REDUCED MOTION
-   ============================================ */
-
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;
@@ -1475,57 +955,6 @@ footer .contato div {
 }
 
 @media (min-width: 768px) {
-  header {
-    width: 90%;
-    height: 6rem;
-    padding: 0 1.5rem;
-    border-bottom-left-radius: 24px;
-    border-bottom-right-radius: 24px;
-    margin: 0 auto;
-    position: relative;
-  }
-
-  header .logo {
-    font-size: 1.35rem;
-  }
-
-  .menu-nav {
-    display: block;
-  }
-
-  .menu-nav nav ul {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    list-style: none;
-    padding: 0;
-  }
-
-  .menu-nav nav ul a {
-    color: var(--color-neutral-dark);
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-
-  .menu-login {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .btn-entrar {
-    font-size: 0.95rem;
-  }
-
-  .btn-cadastrar {
-    padding: 0.65rem 1.25rem;
-    font-size: 0.95rem;
-  }
-
-  .hamburger {
-    display: none;
-  }
-
   main {
     padding: 0;
   }
@@ -1791,177 +1220,123 @@ footer .contato div {
   .comece-agora .btn-criar-conta img {
     width: 1.2rem;
   }
-
-  footer {
-    margin-top: 0;
-  }
-
-  .footer-content {
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 3rem;
-    width: 90%;
-    padding: 3rem 0;
-    margin-bottom: 2rem;
-  }
-
-  .footer-content .section {
-    width: 33%;
-  }
-
-  .footer-copyright p {
-    text-align: left;
-  }
 }
 
-@media (min-width: 1536px) {
-  header {
-    width: 80%;
-    height: 7rem;
-    padding: 0 2rem;
-  }
-
-  header .logo {
-    font-size: 1.5rem;
-  }
-
-  .menu-nav nav ul {
-    gap: 3rem;
-  }
-
-  .menu-nav nav ul a {
-    font-size: 1.2rem;
-  }
-
-  .menu-login {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-  }
-
-  .btn-entrar {
-    font-size: 1.2rem;
-  }
-
-  .btn-cadastrar {
-    padding: 1rem 1.5rem;
-    font-size: 1.2rem;
-  }
-
+@media (min-width: 1280px) {
   .criar-conta {
-    margin: 2rem auto;
-    padding: 6rem 6rem;
-    width: 80%;
+    margin: 1.5rem auto;
+    padding: 4rem;
+    width: 85%;
   }
 
   .criar-conta .left-content {
-    gap: 3rem;
+    gap: 2rem;
   }
 
   .criar-conta .left-content h1 {
-    font-size: 3.5rem;
-    width: 70%;
+    font-size: 2.5rem;
+    width: 80%;
   }
 
   .criar-conta .left-content p {
-    font-size: 2rem;
-    width: 70%;
+    font-size: 1.4rem;
+    width: 80%;
   }
 
   .criar-conta .left-content .btn-criar-conta {
-    font-size: 2rem;
-    padding: 1rem 2rem;
+    font-size: 1.35rem;
+    padding: 0.85rem 1.75rem;
     border-radius: 24px;
   }
 
   .criar-conta .left-content .btn-criar-conta img {
-    width: 1.5rem;
+    width: 1.2rem;
   }
 
   .sobre .content {
-    width: 80%;
-    gap: 5rem;
+    width: 85%;
+    gap: 3.5rem;
   }
 
   .sobre h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .sobre p {
-    font-size: 1.2rem;
-  }
-
-  .cards {
-    gap: 4rem;
-  }
-
-  .card {
-    width: 22rem;
-    height: 15rem;
-    padding: 2rem;
-  }
-
-  .card-texto h3 {
-    font-size: 1.5rem;
-  }
-
-  .card-texto p {
     font-size: 1.1rem;
   }
 
+  .cards {
+    gap: 2.5rem;
+  }
+
+  .card {
+    width: 18rem;
+    height: 13rem;
+    padding: 1.75rem;
+  }
+
+  .card-texto h3 {
+    font-size: 1.35rem;
+  }
+
+  .card-texto p {
+    font-size: 1rem;
+  }
+
   .card-verde .card-icone img {
-    width: 300px;
-    height: 300px;
-  }
-
-  .card-verde .card-icone {
-    right: -100px;
-    bottom: -40px;
-  }
-
-  .card-cinza .card-icone img {
-    width: 280px;
-    height: 280px;
-  }
-
-  .card-cinza .card-icone {
-    right: -110px;
-    bottom: -40px;
-  }
-
-  .card-amarelo .card-icone img {
     width: 240px;
     height: 240px;
   }
 
+  .card-verde .card-icone {
+    right: -80px;
+    bottom: -35px;
+  }
+
+  .card-cinza .card-icone img {
+    width: 220px;
+    height: 220px;
+  }
+
+  .card-cinza .card-icone {
+    right: -85px;
+    bottom: -35px;
+  }
+
+  .card-amarelo .card-icone img {
+    width: 190px;
+    height: 190px;
+  }
+
   .card-amarelo .card-icone {
-    right: -70px;
+    right: -55px;
     bottom: -20px;
   }
 
   .para-quem {
-    width: 80%;
-    padding: 8rem 0;
+    width: 85%;
+    padding: 5rem 0;
   }
 
   .para-quem h1 {
-    font-size: 2.5rem;
-    max-width: 300px;
+    font-size: 2rem;
+    max-width: 250px;
   }
 
   .para-quem div div.icon,
   .para-quem>div>div:first-child {
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
   }
 
   .para-quem .icon img {
-    width: 70px;
-    height: 70px;
+    width: 62px;
+    height: 62px;
   }
 
   .para-quem .title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .para-quem .text {
@@ -1970,158 +1345,127 @@ footer .contato div {
   }
 
   .como-funciona {
-    gap: 4rem;
+    gap: 3rem;
   }
 
   .como-funciona-titulo {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .como-funciona-passo {
-    gap: 4rem;
-    max-width: 80%;
+    gap: 3rem;
+    max-width: 85%;
     width: auto;
   }
 
   .como-funciona-numero {
-    font-size: 5rem;
+    font-size: 4.5rem;
   }
 
   .como-funciona-icone-wrapper {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     border-radius: 16px;
   }
 
   .como-funciona-icone {
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
   }
 
   .como-funciona-subtitulo {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .como-funciona-descricao {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 
   .como-funciona-imagem-wrapper {
-    height: 22rem;
-    max-width: 35rem;
-    padding: 1.5rem;
+    height: 18rem;
+    max-width: 30rem;
+    padding: 1.25rem;
   }
 
   .como-funciona .banner {
-    width: 80%;
-    gap: 4rem;
-    padding: 4rem;
-    margin: 4rem 0;
+    width: 85%;
+    gap: 3rem;
+    padding: 3rem;
+    margin: 3rem 0;
   }
 
   .como-funciona .banner h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .como-funciona .banner p {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     width: 80%;
   }
 
   .como-funciona .banner div {
-    width: 11rem;
-    height: 11rem;
+    width: 9.5rem;
+    height: 9.5rem;
   }
 
   .como-funciona .banner div img {
-    width: 11rem;
-    height: 11rem;
+    width: 9.5rem;
+    height: 9.5rem;
   }
 
   .servicos {
-    padding: 8rem 0;
-    gap: 3rem;
-    margin-bottom: 4rem;
+    padding: 5rem 0;
+    gap: 2.5rem;
+    margin-bottom: 3rem;
   }
 
   .servicos-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   .servicos-header p {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
   }
 
   .servicos-grid {
-    gap: 2rem;
-    width: 80%;
+    gap: 1.5rem;
+    width: 85%;
   }
 
   .servicos-linha {
-    gap: 2rem;
+    gap: 1.5rem;
     height: 18vw;
-    min-height: 160px;
+    min-height: 140px;
   }
 
   .servico-card {
-    border-radius: 22px;
+    border-radius: 20px;
   }
 
   .servico-card span {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
   }
 
   .comece-agora {
-    gap: 4rem;
-    padding: 6rem;
+    gap: 3rem;
+    padding: 4rem;
   }
 
   .comece-agora h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .comece-agora p {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
 
   .comece-agora .btn-criar-conta {
-    font-size: 2rem;
-    padding: 1rem 2rem;
+    font-size: 1.5rem;
+    padding: 0.9rem 1.75rem;
   }
 
   .comece-agora .btn-criar-conta img {
-    width: 1.5rem;
-  }
-
-  .footer-content {
-    gap: 4rem;
-    width: 80%;
-    padding: 4rem 0;
-    margin-bottom: 4rem;
-  }
-
-  footer .logo div img {
-    width: 30px;
-    height: 30px;
-  }
-
-  footer .logo div p {
-    font-size: 1rem;
-    width: 50%;
-  }
-
-  footer .menu-nav ul a {
-    font-size: 1rem;
-  }
-
-  footer .contato div img {
-    width: 30px;
-    height: 30px;
-  }
-
-  .footer-copyright p {
-    font-size: 1rem;
-    width: 80%;
+    width: 1.2rem;
   }
 }
 </style>
