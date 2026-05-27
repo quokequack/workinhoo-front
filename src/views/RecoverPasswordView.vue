@@ -79,7 +79,15 @@ const {
                 </div>
 
                 <div class="form-acoes">
-                  <button type="submit" class="btn-primario btn-bloco">Enviar código</button>
+                  <button type="submit" class="btn-primario btn-bloco" :disabled="carregando">
+                    <span v-if="!carregando">Enviar código</span>
+                    <span v-else class="btn-loading">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="spinner">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"
+                          stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                      </svg>
+                    </span>
+                  </button>
                 </div>
               </form>
             </section>
@@ -192,7 +200,15 @@ const {
                 <p v-if="erroSenhaServidor" class="erro-texto">{{ erroSenhaServidor }}</p>
 
                 <div class="form-acoes">
-                  <button type="submit" class="btn-primario btn-bloco">Redefinir senha</button>
+                  <button type="submit" class="btn-primario btn-bloco" :disabled="carregando">
+                    <span v-if="!carregando">Redefinir senha</span>
+                    <span v-else class="btn-loading">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="spinner">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"
+                          stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                      </svg>
+                    </span>
+                  </button>
                 </div>
 
                 <div class="divisor">
@@ -556,6 +572,41 @@ const {
 
 .form-acoes {
   margin-top: 0.25rem;
+}
+
+.btn-primario:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 12px 32px rgba(62, 58, 168, 0.42);
+}
+
+.btn-primario:hover:not(:disabled)::after {
+  opacity: 1;
+}
+
+.btn-primario:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: none;
+}
+
+.btn-primario:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 0.8s linear infinite;
 }
 
 .btn-primario {
