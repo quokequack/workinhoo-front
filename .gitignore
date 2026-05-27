@@ -39,3 +39,7 @@ __screenshots__/
 *.timestamp-*-*.mjs
 
 /.vscode
+
+.env
+.env.local
+.env.*.local
