@@ -12,7 +12,7 @@ const {
   carregando,
   erroEmailServidor, erroSenhaServidor,
   requisitos, senhaForte, mostrarRequisitos, senhasErro,
-  emailValido,
+  emailValido, modalRef,
   enviarCodigo, confirmarCodigo, reenviarCodigo, redefinirSenha,
   voltarStep1, irParaLogin
 } = useRecuperacaoSenha()
