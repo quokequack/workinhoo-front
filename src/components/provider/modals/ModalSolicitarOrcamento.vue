@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import type { Prestador } from '@/types/prestador'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   aberto: boolean
   prestador: Prestador
-}>()
+  servicoInicial?: string
+}>(), {
+  servicoInicial: ''
+})
 
 const emit = defineEmits<{
   fechar: []
@@ -26,7 +29,7 @@ const bairroMenuOpen = ref(false)
 const cidadeMenuOpen = ref(false)
 
 const todosServicos = computed(() =>
-  props.prestador.especialidades.flatMap((e) => e.servicos)
+  props.prestador.especialidades.map((e) => e.nome)
 )
 
 const bairrosDisponiveis = computed(() => props.prestador.area.bairros)
@@ -35,6 +38,32 @@ const cidadesDisponiveis = computed(() => [props.prestador.area.cidade])
 const servicoLabel = computed(() => servicoSelecionado.value || 'Selecione o serviço')
 const bairroLabel = computed(() => bairroSelecionado.value || 'Bairro')
 const cidadeLabel = computed(() => cidadeSelecionada.value || 'Cidade')
+
+function resetarEstado() {
+  servicoSelecionado.value = ''
+  bairroSelecionado.value = ''
+  cidadeSelecionada.value = ''
+  descricao.value = ''
+  horarios.value = []
+  arquivos.value = []
+  closeDropdowns()
+
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
+}
+
+watch(
+  () => props.aberto,
+  (aberto) => {
+    if (aberto) {
+      servicoSelecionado.value = props.servicoInicial
+    } else {
+      resetarEstado()
+    }
+  },
+  { immediate: true }
+)
 
 function closeDropdowns() {
   servicoMenuOpen.value = false
@@ -105,10 +134,21 @@ function removerArquivo(i: number) {
   arquivos.value.splice(i, 1)
 }
 
+function resetarFormulario() {
+  servicoSelecionado.value = ''
+  bairroSelecionado.value = ''
+  cidadeSelecionada.value = ''
+  descricao.value = ''
+  horarios.value = []
+  arquivos.value = []
+  closeDropdowns()
+}
+
 function enviar() {
   closeDropdowns()
   emit('fechar')
   emit('enviado')
+  resetarFormulario()
 }
 </script>
 

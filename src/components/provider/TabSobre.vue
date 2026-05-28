@@ -14,17 +14,21 @@ const bioExpanded = ref(false)
 const BIO_LIMIT = 800
 
 const modalSolicitarOrcamentoAberto = ref(false)
+const servicoInicialOrcamento = ref('')
 
-function abrirModalSolicitarOrcamento() {
+function abrirModalSolicitarOrcamento(servico?: string) {
+  servicoInicialOrcamento.value = servico || ''
   modalSolicitarOrcamentoAberto.value = true
 }
 
 function fecharModalSolicitarOrcamento() {
   modalSolicitarOrcamentoAberto.value = false
+  servicoInicialOrcamento.value = ''
 }
 
 function handleEnviadoOrcamento() {
   modalSolicitarOrcamentoAberto.value = false
+  servicoInicialOrcamento.value = ''
 }
 
 const hasLongBio = computed(() => {
@@ -99,7 +103,7 @@ const displayedBio = computed(() => {
               R$ {{ esp.precoBase.toFixed(2).replace('.', ',') }}
             </div>
           </div>
-          <button class="btn btn-primary" type="button" @click="abrirModalSolicitarOrcamento">
+          <button class="btn btn-primary" type="button" @click="abrirModalSolicitarOrcamento(esp.nome)">
             Solicitar orçamento
           </button>
         </div>
@@ -107,7 +111,8 @@ const displayedBio = computed(() => {
     </div>
 
     <ModalSolicitarOrcamento :aberto="modalSolicitarOrcamentoAberto" :prestador="props.prestador"
-      @fechar="fecharModalSolicitarOrcamento" @enviado="handleEnviadoOrcamento" />
+      :servico-inicial="servicoInicialOrcamento" @fechar="fecharModalSolicitarOrcamento"
+      @enviado="handleEnviadoOrcamento" />
   </div>
 </template>
 
@@ -388,11 +393,9 @@ const displayedBio = computed(() => {
   border-bottom-left-radius: 1rem;
   border-bottom-right-radius: 1rem;
   border-top: 0.0625rem solid var(--color-neutral-light-light);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-neutral-light-light) 94%, white) 0%,
-    var(--color-neutral-light-light) 100%
-  );
+  background: linear-gradient(180deg,
+      color-mix(in srgb, var(--color-neutral-light-light) 94%, white) 0%,
+      var(--color-neutral-light-light) 100%);
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: auto;
