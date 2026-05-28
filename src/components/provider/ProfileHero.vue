@@ -101,7 +101,8 @@ function handleEnviadoOrcamento() {
 <style scoped>
 .profile-hero {
   position: relative;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: visible;
   margin-bottom: 2.5rem;
   border-bottom: 0.0625rem solid var(--color-neutral-light-medium);
   animation: hero-fade-up 0.75s cubic-bezier(0.22, 1, 0.36, 1);
@@ -116,7 +117,6 @@ function handleEnviadoOrcamento() {
       var(--color-primary-medium) 58%,
       var(--color-primary-light) 100%);
   border-radius: 1rem;
-  overflow: visible;
   z-index: 1;
 }
 
@@ -318,7 +318,7 @@ function handleEnviadoOrcamento() {
       var(--color-primary-darkest) 0%,
       var(--color-primary-dark) 100%);
   color: #ffffff;
-  border-color: var(--color-primary-darkest);
+  border: none;
   box-shadow: 0 0.75rem 1.5rem rgba(22, 29, 39, 0.12);
 }
 
@@ -326,7 +326,6 @@ function handleEnviadoOrcamento() {
   background: linear-gradient(180deg,
       var(--color-primary-dark) 0%,
       var(--color-primary-medium) 100%);
-  border-color: var(--color-primary-dark);
   box-shadow: 0 1rem 2rem rgba(22, 29, 39, 0.16);
   filter: saturate(1.05);
 }

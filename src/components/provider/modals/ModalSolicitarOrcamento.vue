@@ -351,21 +351,25 @@ function enviar() {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(circle at top, rgba(113, 63, 255, 0.08), transparent 34%),
-    rgba(17, 17, 17, 0.52);
-  backdrop-filter: blur(0.375rem);
+  padding: 1.25rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.25rem;
   z-index: 50;
-  overflow-y: auto;
+  background:
+    radial-gradient(circle at top, rgba(113, 63, 255, 0.08), transparent 32%),
+    rgba(17, 17, 17, 0.52);
+  backdrop-filter: blur(0.375rem);
 }
 
 .modal-card {
+  box-sizing: border-box;
   width: min(100%, 41.25rem);
   max-width: 41.25rem;
+  overflow: hidden;
   background:
     linear-gradient(180deg,
       color-mix(in srgb, var(--color-neutral-light-white) 96%, white) 0%,
@@ -380,7 +384,6 @@ function enviar() {
   flex-direction: column;
   gap: 0;
   margin: auto;
-  overflow: visible;
   transform-origin: center;
 }
 
@@ -388,11 +391,8 @@ function enviar() {
   position: relative;
   max-height: min(92dvh, 56rem);
   overflow-y: auto;
-  overflow-x: visible;
+  overflow-x: hidden;
   padding: 1.75rem 2rem;
-  border-radius: 1.125rem;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 
 .modal-scroll::-webkit-scrollbar {
@@ -1185,13 +1185,13 @@ function enviar() {
     width: 100%;
     max-width: 100%;
     border-radius: 1.25rem 1.25rem;
-    overflow: visible;
+    overflow: hidden;
   }
 
   .modal-scroll {
     max-height: min(92dvh, 56rem);
     overflow-y: auto;
-    overflow-x: visible;
+    overflow-x: hidden;
     padding: 1.5rem 1rem 1rem;
     border-radius: 1.25rem 1.25rem 0 0;
   }

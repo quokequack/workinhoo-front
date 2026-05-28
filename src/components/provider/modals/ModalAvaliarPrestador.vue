@@ -160,6 +160,8 @@ watch(
   padding: 1.25rem;
   z-index: 50;
   overflow-y: auto;
+      box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .modal-card {

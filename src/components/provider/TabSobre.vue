@@ -206,6 +206,7 @@ const displayedBio = computed(() => {
   border: none;
   cursor: pointer;
   padding: 0;
+  font-family: inherit;
 }
 
 .show-more:hover {
