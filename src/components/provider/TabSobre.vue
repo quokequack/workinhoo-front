@@ -11,7 +11,7 @@ const props = defineProps<{
 }>()
 
 const bioExpanded = ref(false)
-const BIO_LIMIT = 800
+const BIO_LIMIT = 400
 
 const modalSolicitarOrcamentoAberto = ref(false)
 const servicoInicialOrcamento = ref('')
