@@ -278,10 +278,18 @@ function enviar() {
               </div>
 
               <div class="form-group">
-                <label class="form-label">Descrição do problema ou necessidade</label>
-                <textarea v-model="descricao" class="form-textarea"
+                <label class="form-label">
+                  Descrição do problema ou necessidade
+                  <span class="rotulo-opcional">(opcional)</span>
+                </label>
+
+                <textarea v-model="descricao" class="form-textarea" maxlength="255"
                   placeholder="Descreva o que você precisa, o local do serviço e qualquer detalhe importante"
                   rows="4"></textarea>
+
+                <div class="char-count" aria-live="polite">
+                  {{ descricao.length }}/255
+                </div>
               </div>
 
               <div class="form-group">
@@ -302,7 +310,8 @@ function enviar() {
                   <img src="@/assets/icons/cloud.svg" alt="" aria-hidden="true" />
 
                   <span class="upload-hint">
-                    Adicione fotos para ajudar o prestador a entender o serviço
+                    Adicione fotos para ajudar o prestador a entender o serviço <span
+                      class="rotulo-opcional">(opcional)</span>
                   </span>
 
                   <button type="button" class="upload-btn-label" @click.stop="abrirSeletorArquivos">
@@ -382,6 +391,12 @@ function enviar() {
   overflow-x: visible;
   padding: 1.75rem 2rem;
   border-radius: 1.125rem;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.modal-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .modal-card::before {
@@ -588,6 +603,12 @@ function enviar() {
   letter-spacing: 0.01em;
 }
 
+.rotulo-opcional {
+  font-weight: 400;
+  color: var(--color-neutral-light-dark);
+  margin-left: 0.25rem;
+}
+
 .local-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -635,6 +656,13 @@ function enviar() {
   transform: translateY(-0.0625rem);
 }
 
+.char-count {
+  align-self: flex-end;
+  font-size: 0.75rem;
+  color: var(--color-neutral-light-dark);
+  margin-top: 0.125rem;
+}
+
 .horario-chips {
   display: flex;
   gap: 0.5rem;
@@ -680,7 +708,7 @@ function enviar() {
 .upload-area {
   border: 0.09375rem dashed var(--color-neutral-light-medium);
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem 1.5rem;
   text-align: center;
   background:
     linear-gradient(180deg,
@@ -695,6 +723,10 @@ function enviar() {
   animation-delay: 0.16s;
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
 }
 
 .upload-area:hover {
@@ -734,6 +766,7 @@ function enviar() {
   color: var(--color-neutral-lightest);
   font-family: 'Poppins', sans-serif;
   max-width: 28rem;
+  margin-inline: auto;
 }
 
 .upload-btn-label {
@@ -771,7 +804,7 @@ function enviar() {
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
-  margin-top: 0.625rem;
+  margin-top: 0.25rem;
 }
 
 .file-item {
@@ -1151,7 +1184,7 @@ function enviar() {
   .modal-card {
     width: 100%;
     max-width: 100%;
-    border-radius: 1.25rem 1.25rem 0 0;
+    border-radius: 1.25rem 1.25rem;
     overflow: visible;
   }
 
@@ -1221,7 +1254,7 @@ function enviar() {
   }
 
   .upload-area {
-    padding: 1.125rem;
+    padding: 1rem;
   }
 
   .form-textarea {
@@ -1249,11 +1282,12 @@ function enviar() {
   }
 
   .modal-scroll {
-    padding: 4rem 0.875rem 1rem;
+    padding: 3.5rem 0.875rem 1rem;
   }
 
   .modal-titulo {
     font-size: 1.15rem;
+    padding-bottom: 0;
   }
 
   .prestador-avatar {
@@ -1271,7 +1305,8 @@ function enviar() {
   .sort-menu__item,
   .form-label,
   .form-select-trigger,
-  .form-textarea {
+  .form-textarea,
+  .char-count {
     font-size: 0.78rem;
   }
 }

@@ -18,7 +18,14 @@ const notaHover = ref(0)
 const tagsSelecionadas = ref<string[]>([])
 const descricao = ref('')
 
-const tags = ['Pontual', 'Educado(a)', 'Serviço rápido', 'Preço justo', 'Resolveu o problema', 'Recomendo']
+const tags = [
+  'Pontual',
+  'Educado(a)',
+  'Serviço rápido',
+  'Preço justo',
+  'Resolveu o problema',
+  'Recomendo'
+]
 
 function toggleTag(tag: string) {
   const idx = tagsSelecionadas.value.indexOf(tag)
@@ -97,7 +104,10 @@ watch(
             </div>
 
             <div class="form-group">
-              <label class="form-label">Como foi o atendimento?</label>
+              <label class="form-label">
+                Como foi o atendimento?
+                <span class="rotulo-opcional">(opcional)</span>
+              </label>
 
               <div class="tag-chips">
                 <button v-for="tag in tags" :key="tag" type="button" class="tag-chip"
@@ -108,9 +118,17 @@ watch(
             </div>
 
             <div class="form-group">
-              <label class="form-label">Descreva sua experiência</label>
-              <textarea v-model="descricao" class="form-textarea"
+              <label class="form-label">
+                Descreva sua experiência
+                <span class="rotulo-opcional">(opcional)</span>
+              </label>
+
+              <textarea v-model="descricao" class="form-textarea" maxlength="255"
                 placeholder="Conte um pouco sobre sua experiência com esse profissional" rows="4"></textarea>
+
+              <div class="char-count" aria-live="polite">
+                {{ descricao.length }}/255
+              </div>
             </div>
           </div>
 
@@ -223,12 +241,6 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.85), transparent 60%),
-    color-mix(in srgb, var(--color-primary-lightest) 18%, white);
-  box-shadow:
-    inset 0 0 0 0.0625rem rgba(255, 255, 255, 0.7),
-    0 0.625rem 1.25rem rgba(22, 29, 39, 0.08);
   flex-shrink: 0;
   transition:
     transform 0.25s ease,
@@ -237,9 +249,6 @@ watch(
 
 .modal-card:hover .header-icon {
   transform: translateY(-0.125rem);
-  box-shadow:
-    inset 0 0 0 0.0625rem rgba(255, 255, 255, 0.7),
-    0 0.875rem 1.75rem rgba(22, 29, 39, 0.12);
 }
 
 .header-icon img {
@@ -297,6 +306,20 @@ watch(
   flex-direction: column;
   gap: 0.625rem;
   animation: fade-up 0.45s ease both;
+}
+
+.rotulo-opcional {
+  font-weight: 400;
+  color: var(--color-neutral-light-dark);
+  margin-left: 0.25rem;
+  font-size: 0.82rem;
+}
+
+.char-count {
+  align-self: flex-end;
+  font-size: 0.75rem;
+  color: var(--color-neutral-light-dark);
+  margin-top: 0.125rem;
 }
 
 .form-group:nth-child(1) {
@@ -626,7 +649,7 @@ watch(
   .modal-card {
     width: 100%;
     max-width: 100%;
-    border-radius: 1.25rem 1.25rem 0 0;
+    border-radius: 1.25rem 1.25rem;
     padding: 1.375rem 1rem 1rem;
     max-height: min(92dvh, 56rem);
     overflow-y: auto;
@@ -676,6 +699,11 @@ watch(
     padding: 1.125rem 0.875rem 0.875rem;
   }
 
+  .modal-header {
+    padding-bottom: 0;
+    align-items: center;
+  }
+
   .header-icon {
     padding: 0.5rem;
   }
@@ -691,6 +719,12 @@ watch(
 
   .form-label {
     font-size: 0.82rem;
+  }
+
+  .tag-chips {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
   }
 
   .tag-chip {
