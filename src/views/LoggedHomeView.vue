@@ -110,15 +110,17 @@ const solicitacoesRecentes = [
       <section class="hero">
         <div class="hero__content">
           <p class="hero__greeting">Olá, João!</p>
-          <h2>Precisa de um serviço? Encontre especialistas em minutos.</h2>
-          <p class="hero__text">
-            Busque prestadores avaliados, compare perfis e solicite serviços diretamente pela
-            plataforma.
-          </p>
+
+          <div class="hero__text-group">
+            <h2 class="hero__title">Precisa de um serviço? Encontre especialistas em minutos.</h2>
+            <p class="hero__subtitle">
+              Busque prestadores avaliados, compare perfis e solicite serviços diretamente pela plataforma.
+            </p>
+          </div>
 
           <div class="hero__actions">
-            <button type="button" class="btn btn--primary">Buscar serviços</button>
-            <button type="button" class="btn btn--secondary">Tornar-se Prestador</button>
+            <button type="button" class="btn btn--white">Buscar serviços</button>
+            <button type="button" class="btn btn--outline-white">Tornar-se Prestador</button>
           </div>
         </div>
       </section>
@@ -269,38 +271,97 @@ const solicitacoesRecentes = [
 }
 
 .hero {
-  background: linear-gradient(135deg, var(--color-primary-medium), var(--color-secondary-medium));
-  border-radius: 0 0 1.5rem 1.5rem;
-  padding: 2rem 1.5rem;
-  color: var(--color-neutral-light-white);
+  display: flex;
+  align-items: flex-start;
+  padding: 1.5rem;
+  min-height: 31.25rem;
+  border-radius: 1rem;
+  background:
+    linear-gradient(270deg, rgba(51, 48, 136, 0.9) 22.49%, rgba(30, 29, 82, 0.96) 134.64%),
+    url('@/assets/images/loggedHomeHero.png');
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: cover;
+  color: #fff;
+  overflow: hidden;
 }
 
 .hero__content {
-  max-width: 36rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex: 1;
+  width: 100%;
+  gap: 1.5rem;
 }
 
 .hero__greeting {
+  margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
 }
 
-.hero h2 {
-  font-size: 2rem;
-  line-height: 1.2;
-  margin-bottom: 1rem;
+.hero__text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
 }
 
-.hero__text {
-  font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
+.hero__title {
+  margin: 0;
+  max-width: 18.9375rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 2.375rem;
+  color: #ffffff;
+}
+
+.hero__subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.375rem;
+  color: #ffffff;
 }
 
 .hero__actions {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hero .btn {
+  width: 100%;
+}
+
+.hero .btn--white {
+  background: #fff;
+  color: #333088;
+  border: 2px solid #fff;
+  border-radius: 0.5rem;
+}
+
+.hero .btn--outline-white {
+  background: transparent;
+  color: #fff;
+  border: 2px solid #fff !important;
+  border-radius: 0.5rem !important;
 }
 
 .section-heading {
@@ -573,17 +634,56 @@ const solicitacoesRecentes = [
   }
 
   .hero {
-    margin-top: 1.5rem;
-    border-radius: 1.5rem;
+    align-items: center;
+    min-height: 31.25rem;
+    margin-top: 2rem;
     padding: 3rem;
+    border-radius: 1.5rem;
+    background:
+      linear-gradient(
+      100deg,
+      rgba(30, 29, 82, 1) 35%,
+      rgba(51, 48, 136, 0.96) 50%,
+      rgba(51, 48, 136, 0.82) 55%,
+      rgba(62, 58, 166, 0.45) 70%,
+      rgba(62, 58, 166, 0.18) 90%,
+      rgba(62, 58, 166, 0.12) 100%
+    ),
+      url('@/assets/images/loggedHomeHero.png');
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: auto 115%;
   }
 
-  .hero h2 {
+  .hero__content {
+    max-width: 41.625rem;
+    gap: 3rem;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__title {
+    max-width: 41.625rem;
     font-size: 2.5rem;
+    line-height: 3.4375rem;
+  }
+
+  .hero__subtitle {
+    max-width: 36.875rem;
+    font-size: 1.125rem;
+    line-height: 1.875rem;
   }
 
   .hero__actions {
     flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    width: auto;
+  }
+
+  .hero .btn {
+    width: auto;
   }
 
   .featured__grid {
