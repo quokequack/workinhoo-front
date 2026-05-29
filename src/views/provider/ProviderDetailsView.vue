@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import ProfileHero from '@/components/provider/ProfileHero.vue'
 import ProfileTabs from '@/components/provider/ProfileTabs.vue'
-import TabSobre from '@/components/provider/TabSobre.vue'
-import TabPortfolio from '@/components/provider/TabPortfolio.vue'
-import TabAvaliacoes from '@/components/provider/TabAvaliacoes.vue'
-import type { TabId } from '@/components/provider/ProfileTabs.vue'
 import type { Prestador } from '@/types/prestador'
+
+const route = useRoute()
+const router = useRouter()
 
 const prestador = ref<Prestador>({
     id: 1,
@@ -188,21 +188,18 @@ const prestadorComResumo = computed(() => ({
     nota: Number(notaMedia.value.toFixed(1)),
     totalAvaliacoes: totalAvaliacoes.value,
 }))
-
-const activeTab = ref<TabId>('sobre')
 </script>
 
 <template>
     <main class="page-main" id="main-content">
-        <ProfileHero :prestador="prestadorComResumo" @solicitar-orcamento="() => { }"
-            @avaliar="() => activeTab = 'avaliacoes'" />
+        <ProfileHero :prestador="prestadorComResumo" />
 
-        <ProfileTabs :active-tab="activeTab" @change="(tab) => activeTab = tab" />
+        <ProfileTabs />
 
         <Transition name="tab-fade" mode="out-in">
-            <TabSobre v-if="activeTab === 'sobre'" :prestador="prestador" :key="'sobre'" />
-            <TabPortfolio v-else-if="activeTab === 'portfolio'" :prestador="prestador" :key="'portfolio'" />
-            <TabAvaliacoes v-else-if="activeTab === 'avaliacoes'" :prestador="prestadorComResumo" :key="'avaliacoes'" />
+            <router-view v-slot="{ Component }">
+                <component :is="Component" :prestador="prestadorComResumo" />
+            </router-view>
         </Transition>
     </main>
 </template>

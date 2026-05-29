@@ -1,26 +1,36 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
 export type TabId = 'sobre' | 'portfolio' | 'avaliacoes'
 
-defineProps<{
-  activeTab: TabId
-}>()
+const route = useRoute()
+const router = useRouter()
 
-const emit = defineEmits<{
-  change: [tab: TabId]
-}>()
-
-const tabs: { id: TabId; label: string }[] = [
-  { id: 'sobre', label: 'Sobre' },
-  { id: 'portfolio', label: 'Portfólio' },
-  { id: 'avaliacoes', label: 'Avaliações' },
+const tabs = [
+  { id: 'sobre' as TabId, label: 'Sobre', name: 'provider-details-about' },
+  { id: 'portfolio' as TabId, label: 'Portfólio', name: 'provider-details-portfolio' },
+  { id: 'avaliacoes' as TabId, label: 'Avaliações', name: 'provider-details-reviews' },
 ]
+
+const activeTab = computed<TabId>(() => {
+  if (route.name === 'provider-details-portfolio') return 'portfolio'
+  if (route.name === 'provider-details-reviews') return 'avaliacoes'
+  return 'sobre'
+})
+
+function changeTab(routeName: string) {
+  router.push({
+    name: routeName,
+    params: { id: route.params.id },
+  })
+}
 </script>
 
 <template>
   <nav class="profile-tabs" role="tablist" aria-label="Seções do perfil">
     <button v-for="tab in tabs" :key="tab.id" class="tab-btn" :class="{ active: activeTab === tab.id }" role="tab"
-      :aria-selected="activeTab === tab.id" :aria-controls="`panel-${tab.id}`" :id="`tab-${tab.id}`"
-      @click="emit('change', tab.id)">
+      :aria-selected="activeTab === tab.id" @click="changeTab(tab.name)">
       <span class="tab-btn__label">{{ tab.label }}</span>
     </button>
   </nav>

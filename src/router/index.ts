@@ -17,8 +17,32 @@ const router = createRouter({
     },
     {
       path: '/prestadores/:id',
-      name: 'provider-details',
       component: () => import('@/views/provider/ProviderDetailsView.vue'),
+      props: true,
+      children: [
+        {
+          path: '',
+          redirect: to => ({ name: 'provider-details-about', params: { id: to.params.id } }),
+        },
+        {
+          path: 'sobre',
+          name: 'provider-details-about',
+          component: () => import('@/components/provider/tabs/TabSobre.vue'),
+          props: true,
+        },
+        {
+          path: 'portfolio',
+          name: 'provider-details-portfolio',
+          component: () => import('@/components/provider/tabs/TabPortfolio.vue'),
+          props: true,
+        },
+        {
+          path: 'avaliacoes',
+          name: 'provider-details-reviews',
+          component: () => import('@/components/provider/tabs/TabAvaliacoes.vue'),
+          props: true,
+        },
+      ],
     },
   ],
 })
