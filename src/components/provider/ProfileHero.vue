@@ -73,7 +73,7 @@ function handleEnviadoOrcamento() {
       </div>
 
       <div class="profile-hero__meta">
-        <div class="meta-chip meta-chip--rating">
+        <div class="meta-chip">
           <img :src="starProfileIcon" alt="" width="13" height="13" aria-hidden="true" />
           {{ props.prestador.nota.toFixed(1) }}
         </div>
@@ -90,6 +90,8 @@ function handleEnviadoOrcamento() {
       </div>
     </div>
 
+    <div class="divider"></div>
+
     <ModalAvaliarPrestador :aberto="modalAvaliarAberto" :prestador="props.prestador" @fechar="fecharModalAvaliar"
       @publicado="handlePublicado" />
 
@@ -104,7 +106,6 @@ function handleEnviadoOrcamento() {
   overflow-x: hidden;
   overflow-y: visible;
   margin-bottom: 2.5rem;
-  border-bottom: 0.0625rem solid var(--color-neutral-light-medium);
   animation: hero-fade-up 0.75s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -376,15 +377,15 @@ function handleEnviadoOrcamento() {
   border-color: color-mix(in srgb, var(--color-primary-lightest) 75%, white);
 }
 
-.meta-chip--rating {
-  background:
-    linear-gradient(180deg,
-      color-mix(in srgb, var(--color-primary-lightest) 30%, white) 0%,
-      color-mix(in srgb, var(--color-primary-lightest) 18%, white) 100%);
-}
-
 .meta-chip img {
   flex-shrink: 0;
+}
+
+.divider {
+  height: 0.0625rem;
+  background: var(--color-neutral-light-light);
+  margin: 0 auto;
+  width: 100%;
 }
 
 @keyframes hero-fade-up {

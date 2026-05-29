@@ -235,13 +235,8 @@ watch(
 </script>
 
 <template>
-  <div
-    id="panel-avaliacoes"
-    class="panel-avaliacoes"
-    role="tabpanel"
-    aria-labelledby="tab-avaliacoes"
-    @click="closeSortMenu"
-  >
+  <div id="panel-avaliacoes" class="panel-avaliacoes" role="tabpanel" aria-labelledby="tab-avaliacoes"
+    @click="closeSortMenu">
     <div class="avaliacoes-header">
       <div class="rating-summary">
         <div class="rating-summary__score" :aria-label="`Nota ${prestador.nota.toFixed(1)}`">
@@ -250,15 +245,8 @@ watch(
 
         <div class="rating-summary__meta">
           <div class="stars" aria-hidden="true">
-            <img
-              v-for="i in 5"
-              :key="i"
-              class="star-icon"
-              :src="getStarIcon(prestador.nota, i - 1)"
-              alt=""
-              width="30"
-              height="30"
-            />
+            <img v-for="i in 5" :key="i" class="star-icon" :src="getStarIcon(prestador.nota, i - 1)" alt="" width="30"
+              height="30" />
           </div>
 
           <div class="rating-summary__total">
@@ -288,56 +276,29 @@ watch(
       <span>Ordenar por:</span>
 
       <div class="sort-dropdown" @click.stop>
-        <button
-          class="sort-select"
-          type="button"
-          :aria-expanded="sortMenuOpen"
-          aria-haspopup="menu"
-          @click="toggleSortMenu"
-        >
+        <button class="sort-select" type="button" :aria-expanded="sortMenuOpen" aria-haspopup="menu"
+          @click="toggleSortMenu">
           <span class="sort-select__label">{{ sortLabel }}</span>
-          <img
-            class="sort-select__icon"
-            :class="{ 'is-open': sortMenuOpen }"
-            :src="ARROW_DOWN"
-            alt=""
-            width="12"
-            height="12"
-            aria-hidden="true"
-          />
+          <img class="sort-select__icon" :class="{ 'is-open': sortMenuOpen }" :src="ARROW_DOWN" alt="" width="12"
+            height="12" aria-hidden="true" />
         </button>
 
         <transition name="sort-menu">
           <div v-if="sortMenuOpen" class="sort-menu" role="menu">
-            <button
-              class="sort-menu__item"
-              :class="{ active: sortBy === 'recentes' }"
-              type="button"
-              role="menuitem"
-              @click="setSort('recentes')"
-            >
+            <button class="sort-menu__item" :class="{ active: sortBy === 'recentes' }" type="button" role="menuitem"
+              @click="setSort('recentes')">
               <span>Mais recentes</span>
               <span v-if="sortBy === 'recentes'" class="sort-menu__check">•</span>
             </button>
 
-            <button
-              class="sort-menu__item"
-              :class="{ active: sortBy === 'maiores' }"
-              type="button"
-              role="menuitem"
-              @click="setSort('maiores')"
-            >
+            <button class="sort-menu__item" :class="{ active: sortBy === 'maiores' }" type="button" role="menuitem"
+              @click="setSort('maiores')">
               <span>Avaliações mais altas</span>
               <span v-if="sortBy === 'maiores'" class="sort-menu__check">•</span>
             </button>
 
-            <button
-              class="sort-menu__item"
-              :class="{ active: sortBy === 'menores' }"
-              type="button"
-              role="menuitem"
-              @click="setSort('menores')"
-            >
+            <button class="sort-menu__item" :class="{ active: sortBy === 'menores' }" type="button" role="menuitem"
+              @click="setSort('menores')">
               <span>Avaliações mais baixas</span>
               <span v-if="sortBy === 'menores'" class="sort-menu__check">•</span>
             </button>
@@ -355,14 +316,8 @@ watch(
         </h2>
 
         <div class="depoimentos-side__controls">
-          <button
-            class="carousel-arrow"
-            :class="{ disabled: !canGoPrev }"
-            :disabled="!canGoPrev"
-            type="button"
-            aria-label="Ver avaliações anteriores"
-            @click="prevSlide"
-          >
+          <button class="carousel-arrow" :class="{ disabled: !canGoPrev }" :disabled="!canGoPrev" type="button"
+            aria-label="Ver avaliações anteriores" @click="prevSlide">
             <img :src="ARROW_LEFT" alt="" width="12" height="12" aria-hidden="true" />
           </button>
 
@@ -370,56 +325,29 @@ watch(
             <div class="carousel-progress__fill" :style="{ width: progressPercent + '%' }"></div>
           </div>
 
-          <button
-            class="carousel-arrow"
-            :class="{ disabled: !canGoNext }"
-            :disabled="!canGoNext"
-            type="button"
-            aria-label="Ver próximas avaliações"
-            @click="nextSlide"
-          >
+          <button class="carousel-arrow" :class="{ disabled: !canGoNext }" :disabled="!canGoNext" type="button"
+            aria-label="Ver próximas avaliações" @click="nextSlide">
             <img :src="ARROW_RIGHT" alt="" width="12" height="12" aria-hidden="true" />
           </button>
         </div>
       </aside>
 
-      <div
-        ref="carouselRef"
-        class="avaliacoes-carousel"
-        @pointerdown="onPointerDown"
-        @pointermove="onPointerMove"
-        @pointerup="onPointerUp"
-        @pointercancel="onPointerCancel"
-        @pointerleave="onPointerCancel"
-      >
+      <div ref="carouselRef" class="avaliacoes-carousel" @pointerdown="onPointerDown" @pointermove="onPointerMove"
+        @pointerup="onPointerUp" @pointercancel="onPointerCancel" @pointerleave="onPointerCancel">
         <div class="avaliacoes-track" :style="trackStyle">
           <article v-for="av in sortedAvaliacoes" :key="av.id" class="avaliacao-card">
             <img class="avaliacao-card__quote" :src="QUOTE_MEDIUM" alt="" width="20" height="20" aria-hidden="true" />
 
             <div class="avaliacao-card__stars" :aria-label="`${av.nota} estrelas`">
-              <img
-                v-for="i in 5"
-                :key="i"
-                class="star-icon star-icon--small"
-                :src="getStarIcon(av.nota, i - 1)"
-                alt=""
-                width="16"
-                height="16"
-                aria-hidden="true"
-              />
+              <img v-for="i in 5" :key="i" class="star-icon star-icon--small" :src="getStarIcon(av.nota, i - 1)" alt=""
+                width="16" height="16" aria-hidden="true" />
             </div>
 
             <p class="avaliacao-card__text">{{ av.texto }}</p>
 
             <div class="avaliacao-card__author">
-              <img
-                class="author-avatar"
-                :src="av.avatarUrl"
-                :alt="`Foto de ${av.autor}`"
-                width="44"
-                height="44"
-                loading="lazy"
-              />
+              <img class="author-avatar" :src="av.avatarUrl" :alt="`Foto de ${av.autor}`" width="44" height="44"
+                loading="lazy" />
               <div>
                 <div class="author-name">{{ av.autor }}</div>
                 <div class="author-date">{{ av.data }}</div>
@@ -442,12 +370,8 @@ watch(
       </button>
     </div>
 
-    <ModalAvaliarPrestador
-      :aberto="modalAvaliarAberto"
-      :prestador="prestador"
-      @fechar="fecharModalAvaliar"
-      @publicado="handlePublicado"
-    />
+    <ModalAvaliarPrestador :aberto="modalAvaliarAberto" :prestador="prestador" @fechar="fecharModalAvaliar"
+      @publicado="handlePublicado" />
   </div>
 </template>
 
@@ -456,7 +380,6 @@ watch(
   padding: 1.5rem;
   font-family: 'Poppins', sans-serif;
   animation: fade-panel 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-  overflow-x: hidden;
 }
 
 .avaliacoes-header {
@@ -565,11 +488,7 @@ watch(
 
 .section-divider {
   height: 0.0625rem;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      var(--color-neutral-light-light) 12%,
-      var(--color-neutral-light-light) 88%,
-      transparent 100%);
+  background: var(--color-neutral-light-light);
   margin: 2.5rem 0;
 }
 
@@ -933,7 +852,7 @@ watch(
   transform: translateX(130%);
 }
 
-.btn > * {
+.btn>* {
   position: relative;
   z-index: 1;
 }
@@ -984,6 +903,7 @@ watch(
 }
 
 @keyframes float-soft {
+
   0%,
   100% {
     transform: translate3d(0, 0, 0);
@@ -1150,6 +1070,7 @@ watch(
 }
 
 @media (hover: none) {
+
   .avaliacao-card,
   .avaliacoes-carousel,
   .avaliacao-card__text {
@@ -1176,6 +1097,7 @@ watch(
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .panel-avaliacoes,
   .avaliacoes-header,
   .avaliacoes-toolbar,

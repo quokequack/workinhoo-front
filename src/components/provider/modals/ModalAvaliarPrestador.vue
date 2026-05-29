@@ -72,7 +72,7 @@ watch(
 
           <div class="modal-header">
             <div class="header-icon" aria-hidden="true">
-              <img :src="ratingIcon" alt="Ícone de avaliação" />
+              <img :src="ratingIcon" alt="Ícone de avaliação" class="header-icon-img" />
             </div>
 
             <div class="header-copy">
@@ -103,7 +103,7 @@ watch(
               </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group form-group-char">
               <label class="form-label">
                 Como foi o atendimento?
                 <span class="rotulo-opcional">(opcional)</span>
@@ -131,6 +131,8 @@ watch(
               </div>
             </div>
           </div>
+
+          <div class="divider"></div>
 
           <div class="modal-footer">
             <button class="btn btn-outline" type="button" @click="emit('fechar')">
@@ -160,7 +162,7 @@ watch(
   padding: 1.25rem;
   z-index: 50;
   overflow-y: auto;
-      box-sizing: border-box;
+  box-sizing: border-box;
   overflow-x: hidden;
 }
 
@@ -286,12 +288,7 @@ watch(
 }
 
 .divider {
-  height: 0.0625rem;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      var(--color-neutral-light-light) 12%,
-      var(--color-neutral-light-light) 88%,
-      transparent 100%);
+  border-top: 0.0625rem solid var(--color-neutral-light-light);
   margin: 0 auto;
   width: 100%;
 }
@@ -308,6 +305,10 @@ watch(
   flex-direction: column;
   gap: 0.625rem;
   animation: fade-up 0.45s ease both;
+}
+
+form-group-char {
+  margin-bottom: -1.1rem;
 }
 
 .rotulo-opcional {
@@ -498,7 +499,6 @@ watch(
   justify-content: center;
   gap: 0.75rem;
   padding-top: 1.25rem;
-  border-top: 0.0625rem solid var(--color-neutral-light-light);
 }
 
 .btn {
@@ -702,7 +702,7 @@ watch(
   }
 
   .modal-header {
-    padding-bottom: 0;
+    padding-bottom: 1rem;
     align-items: center;
   }
 
@@ -754,7 +754,8 @@ watch(
   .star-btn,
   .tag-chip,
   .form-textarea,
-  .header-icon {
+  .header-icon,
+  .header-icon-img {
     animation: none !important;
     transition: none !important;
   }

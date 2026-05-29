@@ -332,6 +332,8 @@ function enviar() {
               </div>
             </div>
 
+            <div class="divider"></div>
+
             <div class="modal-footer">
               <button class="btn btn-outline" type="button" @click="emit('fechar')">
                 Cancelar
@@ -456,13 +458,7 @@ function enviar() {
 }
 
 .divider {
-  height: 0.0625rem;
-  background:
-    linear-gradient(90deg,
-      transparent 0%,
-      var(--color-neutral-light-light) 12%,
-      var(--color-neutral-light-light) 88%,
-      transparent 100%);
+  border-top: 0.0625rem solid var(--color-neutral-light-light);
   margin: 0 auto;
   width: 100%;
 }
@@ -575,6 +571,10 @@ function enviar() {
   min-width: 0;
   animation: fade-up 0.45s ease both;
   position: relative;
+}
+
+.form-group:nth-child(3) {
+  margin-top: -1.5rem;
 }
 
 .form-group:nth-child(1) {
@@ -859,7 +859,6 @@ function enviar() {
   justify-content: center;
   gap: 0.75rem;
   padding-top: 1.25rem;
-  border-top: 0.0625rem solid var(--color-neutral-light-light);
   margin-top: 0.25rem;
   position: relative;
   z-index: 1;

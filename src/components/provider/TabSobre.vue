@@ -76,6 +76,8 @@ const displayedBio = computed(() => {
       </div>
     </div>
 
+    <div class="divider"></div>
+
     <h2 class="section-title">Especialidade(s)</h2>
 
     <div class="especialidades-grid">
@@ -127,7 +129,6 @@ const displayedBio = computed(() => {
   gap: 1.5rem;
   margin: 2rem 1.5rem;
   padding-bottom: 2rem;
-  border-bottom: 0.0625rem solid var(--color-neutral-light-medium);
 }
 
 .card {
@@ -272,6 +273,13 @@ const displayedBio = computed(() => {
   color: var(--color-neutral-dark);
   margin: 1.25rem 1.5rem;
   animation: section-fade 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.divider {
+  height: 0.0625rem;
+  background: var(--color-neutral-light-light);
+  margin: 0 auto;
+  width: 100%;
 }
 
 .especialidades-grid {
