@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
-import type { Prestador } from '@/types/prestador'
+import { ref, computed } from 'vue'
+import type { Prestador, PortfolioItem } from '@/types/prestador'
 import PortfolioImageModal from '@/components/provider/modals/ModalPortfolioImage.vue'
+import ModalSolicitarOrcamento from '@/components/provider/modals/ModalSolicitarOrcamento.vue'
 import checkPurple from '@/assets/icons/check-purple.svg'
-import cloudIcon from '@/assets/icons/cloud.svg'
-import type { PortfolioItem } from '@/types/prestador'
 
 const CHECK_PURPLE = checkPurple
-const CLOUD_ICON = cloudIcon
 
 const props = defineProps<{
   prestador: Prestador
@@ -16,51 +14,30 @@ const props = defineProps<{
 const filtroAtivo = ref<string>('todos')
 const modalAberto = ref(false)
 const itemSelecionado = ref<PortfolioItem | null>(null)
-
 const modalOrcamentoAberto = ref(false)
-
-const servicoSelecionado = ref('')
-const bairroSelecionado = ref('')
-const cidadeSelecionada = ref('')
-const descricao = ref('')
-const horarios = ref<string[]>([])
-const arquivos = ref<File[]>([])
-
-const fileInputRef = ref<HTMLInputElement | null>(null)
-
-const servicoMenuOpen = ref(false)
-const bairroMenuOpen = ref(false)
-const cidadeMenuOpen = ref(false)
 
 const todosServicos = computed<string[]>(() => {
   const set = new Set<string>()
-  props.prestador.portfolio.forEach((item) =>
-    item.categorias.forEach((c) => set.add(c))
-  )
+
+  props.prestador.portfolio.forEach((item) => {
+    item.categorias.forEach((categoria) => set.add(categoria))
+  })
+
   return Array.from(set)
 })
 
-const itensFiltrados = computed(() =>
-  filtroAtivo.value === 'todos'
-    ? props.prestador.portfolio
-    : props.prestador.portfolio.filter((item) =>
-      item.categorias.includes(filtroAtivo.value)
-    )
-)
+const itensFiltrados = computed(() => {
+  if (filtroAtivo.value === 'todos') {
+    return props.prestador.portfolio
+  }
 
-const todosServicosOrcamento = computed(() =>
-  props.prestador.especialidades.flatMap((e) => e.servicos)
-)
+  return props.prestador.portfolio.filter((item) =>
+    item.categorias.includes(filtroAtivo.value)
+  )
+})
 
-const bairrosDisponiveis = computed(() => props.prestador.area.bairros)
-const cidadesDisponiveis = computed(() => [props.prestador.area.cidade])
-
-const servicoLabel = computed(() => servicoSelecionado.value || 'Selecione o serviço')
-const bairroLabel = computed(() => bairroSelecionado.value || 'Bairro')
-const cidadeLabel = computed(() => cidadeSelecionada.value || 'Cidade')
-
-function setFiltro(cat: string) {
-  filtroAtivo.value = cat
+function setFiltro(categoria: string) {
+  filtroAtivo.value = categoria
 }
 
 function abrirModal(item: PortfolioItem) {
@@ -79,91 +56,6 @@ function abrirModalOrcamento() {
 
 function fecharModalOrcamento() {
   modalOrcamentoAberto.value = false
-  closeDropdowns()
-}
-
-function closeDropdowns() {
-  servicoMenuOpen.value = false
-  bairroMenuOpen.value = false
-  cidadeMenuOpen.value = false
-}
-
-function toggleServicoMenu() {
-  const next = !servicoMenuOpen.value
-  closeDropdowns()
-  servicoMenuOpen.value = next
-}
-
-function toggleBairroMenu() {
-  const next = !bairroMenuOpen.value
-  closeDropdowns()
-  bairroMenuOpen.value = next
-}
-
-function toggleCidadeMenu() {
-  const next = !cidadeMenuOpen.value
-  closeDropdowns()
-  cidadeMenuOpen.value = next
-}
-
-function selecionarServico(servico: string) {
-  servicoSelecionado.value = servico
-  servicoMenuOpen.value = false
-}
-
-function selecionarBairro(bairro: string) {
-  bairroSelecionado.value = bairro
-  bairroMenuOpen.value = false
-}
-
-function selecionarCidade(cidade: string) {
-  cidadeSelecionada.value = cidade
-  cidadeMenuOpen.value = false
-}
-
-function toggleHorario(h: string) {
-  const idx = horarios.value.indexOf(h)
-  if (idx >= 0) horarios.value.splice(idx, 1)
-  else horarios.value.push(h)
-}
-
-function abrirSeletorArquivos() {
-  closeDropdowns()
-  fileInputRef.value?.click()
-}
-
-function onArquivos(e: Event) {
-  const input = e.target as HTMLInputElement
-  const novosArquivos = Array.from(input.files || [])
-
-  if (!novosArquivos.length) return
-
-  arquivos.value = [...arquivos.value, ...novosArquivos]
-
-  nextTick(() => {
-    if (fileInputRef.value) {
-      fileInputRef.value.value = ''
-    }
-  })
-}
-
-function removerArquivo(i: number) {
-  arquivos.value.splice(i, 1)
-}
-
-function resetarFormularioOrcamento() {
-  servicoSelecionado.value = ''
-  bairroSelecionado.value = ''
-  cidadeSelecionada.value = ''
-  descricao.value = ''
-  horarios.value = []
-  arquivos.value = []
-  closeDropdowns()
-}
-
-function enviarOrcamento() {
-  fecharModalOrcamento()
-  resetarFormularioOrcamento()
 }
 </script>
 
@@ -221,186 +113,7 @@ function enviarOrcamento() {
 
     <PortfolioImageModal :aberto="modalAberto" :item="itemSelecionado" @fechar="fecharModal" />
 
-    <Teleport to="body">
-      <Transition name="modal">
-        <div v-if="modalOrcamentoAberto" class="modal-overlay" @click.self="fecharModalOrcamento">
-          <div class="modal-card" role="dialog" aria-modal="true" aria-label="Solicitar orçamento"
-            @click="closeDropdowns">
-            <button class="btn-fechar" type="button" aria-label="Fechar" @click="fecharModalOrcamento">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-            </button>
-
-            <h2 class="modal-titulo">Solicitar orçamento para</h2>
-
-            <div class="prestador-info-modal">
-              <img class="prestador-avatar" :src="prestador.fotoPerfil" :alt="prestador.nome" width="80" height="80" />
-              <div class="prestador-dados">
-                <span class="prestador-nome">{{ prestador.nome }}</span>
-
-                <div class="prestador-roles">
-                  <template v-for="(role, i) in prestador.roles" :key="role">
-                    <span>{{ role }}</span>
-                    <span v-if="i < prestador.roles.length - 1" class="role-sep">|</span>
-                  </template>
-                </div>
-
-                <div class="prestador-local">
-                  {{ prestador.area.cidade }} – {{ prestador.area.estado }}
-                </div>
-
-                <div class="bairro-tags">
-                  <span v-for="b in prestador.area.bairros" :key="b" class="bairro-tag">
-                    {{ b }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="modal-body">
-              <div class="form-row">
-                <div class="form-group form-group--wide">
-                  <label class="form-label">Serviço desejado</label>
-
-                  <div class="sort-dropdown" @click.stop>
-                    <button class="sort-select form-select-trigger" type="button" :aria-expanded="servicoMenuOpen"
-                      aria-haspopup="menu" @click="toggleServicoMenu">
-                      <span class="sort-select__label">{{ servicoLabel }}</span>
-                      <svg class="sort-select__icon" :class="{ 'is-open': servicoMenuOpen }" width="12" height="12"
-                        viewBox="0 0 12 12" fill="none">
-                        <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                          stroke-linejoin="round" />
-                      </svg>
-                    </button>
-
-                    <transition name="sort-menu">
-                      <div v-if="servicoMenuOpen" class="sort-menu form-sort-menu" role="menu">
-                        <button v-for="s in todosServicosOrcamento" :key="s" class="sort-menu__item"
-                          :class="{ active: servicoSelecionado === s }" type="button" role="menuitem"
-                          @click="selecionarServico(s)">
-                          <span>{{ s }}</span>
-                          <span v-if="servicoSelecionado === s" class="sort-menu__check">•</span>
-                        </button>
-                      </div>
-                    </transition>
-                  </div>
-                </div>
-
-                <div class="form-group form-group--local">
-                  <label class="form-label">Local do atendimento</label>
-
-                  <div class="local-row">
-                    <div class="sort-dropdown" @click.stop>
-                      <button class="sort-select form-select-trigger" type="button" :aria-expanded="bairroMenuOpen"
-                        aria-haspopup="menu" @click="toggleBairroMenu">
-                        <span class="sort-select__label">{{ bairroLabel }}</span>
-                        <svg class="sort-select__icon" :class="{ 'is-open': bairroMenuOpen }" width="12" height="12"
-                          viewBox="0 0 12 12" fill="none">
-                          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                        </svg>
-                      </button>
-
-                      <transition name="sort-menu">
-                        <div v-if="bairroMenuOpen" class="sort-menu form-sort-menu" role="menu">
-                          <button v-for="b in bairrosDisponiveis" :key="b" class="sort-menu__item"
-                            :class="{ active: bairroSelecionado === b }" type="button" role="menuitem"
-                            @click="selecionarBairro(b)">
-                            <span>{{ b }}</span>
-                            <span v-if="bairroSelecionado === b" class="sort-menu__check">•</span>
-                          </button>
-                        </div>
-                      </transition>
-                    </div>
-
-                    <div class="sort-dropdown" @click.stop>
-                      <button class="sort-select form-select-trigger" type="button" :aria-expanded="cidadeMenuOpen"
-                        aria-haspopup="menu" @click="toggleCidadeMenu">
-                        <span class="sort-select__label">{{ cidadeLabel }}</span>
-                        <svg class="sort-select__icon" :class="{ 'is-open': cidadeMenuOpen }" width="12" height="12"
-                          viewBox="0 0 12 12" fill="none">
-                          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                        </svg>
-                      </button>
-
-                      <transition name="sort-menu">
-                        <div v-if="cidadeMenuOpen" class="sort-menu form-sort-menu" role="menu">
-                          <button v-for="cidade in cidadesDisponiveis" :key="cidade" class="sort-menu__item"
-                            :class="{ active: cidadeSelecionada === cidade }" type="button" role="menuitem"
-                            @click="selecionarCidade(cidade)">
-                            <span>{{ cidade }}</span>
-                            <span v-if="cidadeSelecionada === cidade" class="sort-menu__check">•</span>
-                          </button>
-                        </div>
-                      </transition>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Descrição do problema ou necessidade</label>
-                <textarea v-model="descricao" class="form-textarea"
-                  placeholder="Descreva o que você precisa, o local do serviço e qualquer detalhe importante"
-                  rows="4"></textarea>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Faixa de horário desejada</label>
-                <div class="horario-chips">
-                  <button v-for="h in ['Manhã', 'Tarde', 'Noite']" :key="h" type="button" class="horario-chip"
-                    :class="{ active: horarios.includes(h) }" @click="toggleHorario(h)">
-                    {{ h }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="upload-area" @click.stop>
-                <input ref="fileInputRef" id="file-input-portfolio" type="file" multiple class="file-input-hidden"
-                  @change="onArquivos" @click.stop />
-
-                <div class="upload-label">
-                  <img :src="CLOUD_ICON" alt="" aria-hidden="true" />
-
-                  <span class="upload-hint">
-                    Adicione fotos para ajudar o prestador a entender o serviço
-                  </span>
-
-                  <button type="button" class="upload-btn-label" @click.stop="abrirSeletorArquivos">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    Adicionar arquivo
-                  </button>
-                </div>
-
-                <div v-if="arquivos.length" class="file-list">
-                  <div v-for="(f, i) in arquivos" :key="`${f.name}-${i}`" class="file-item">
-                    <span class="file-name">{{ f.name }}</span>
-                    <button type="button" class="file-remove" @click.stop="removerArquivo(i)">×</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="modal-footer">
-              <button class="btn-modal btn-outline" type="button" @click="fecharModalOrcamento">
-                Cancelar
-              </button>
-              <button class="btn-modal btn-primary-modal" type="button" @click="enviarOrcamento">
-                Enviar solicitação
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <ModalSolicitarOrcamento :aberto="modalOrcamentoAberto" :prestador="prestador" @fechar="fecharModalOrcamento" />
   </div>
 </template>
 

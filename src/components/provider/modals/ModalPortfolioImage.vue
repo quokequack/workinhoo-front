@@ -20,7 +20,7 @@ const categoriasTexto = computed(() => {
 <template>
     <Teleport to="body">
         <Transition name="modal">
-            <div v-if="aberto && item" class="modal-overlay" @click.self="emit('fechar')">
+            <div v-if="aberto && item" class="modal-overlay">
                 <div class="modal-card" role="dialog" aria-modal="true" :aria-label="item.titulo">
                     <button class="btn-fechar" type="button" aria-label="Fechar" @click="emit('fechar')">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">

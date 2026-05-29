@@ -61,7 +61,7 @@ watch(
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="aberto" class="modal-overlay" @click.self="emit('fechar')">
+      <div v-if="aberto" class="modal-overlay">
         <div class="modal-card" role="dialog" aria-modal="true" aria-label="Avaliar prestador">
           <button class="btn-fechar" type="button" aria-label="Fechar" @click="emit('fechar')">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">

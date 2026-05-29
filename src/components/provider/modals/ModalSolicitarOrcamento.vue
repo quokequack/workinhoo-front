@@ -155,7 +155,7 @@ function enviar() {
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="aberto" class="modal-overlay" @click.self="emit('fechar')">
+      <div v-if="aberto" class="modal-overlay">
         <div class="modal-card" role="dialog" aria-modal="true" aria-label="Solicitar orçamento"
           @click="closeDropdowns">
           <div class="modal-scroll">
