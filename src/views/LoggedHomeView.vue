@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import LoggedHeader from '@/components/LoggedHeader.vue'
 import LoggedFooter from '@/components/LoggedFooter.vue'
+
 import diaristaImg from '@/assets/images/diarista.jpg'
 import eletricistaImg from '@/assets/images/eletricista.jpg'
 import encanadorImg from '@/assets/images/encanador.jpg'
@@ -9,15 +11,96 @@ import pedreiroImg from '@/assets/images/pedreiro.jpg'
 import pintorImg from '@/assets/images/pintor.jpg'
 import tatuadorImg from '@/assets/images/tatuador.jpg'
 
+import servicosResidenciaisImg from '@/assets/images/servicos-residenciais.png'
+import construcaoReparosImg from '@/assets/images/construcao-reparos.png'
+import servicosDomesticosImg from '@/assets/images/servicos-domesticos.png'
+import belezaBemEstarImg from '@/assets/images/beleza-bemestar.png'
+import saudeQualidadeImg from '@/assets/images/saude-qualidade.png'
+import criativosDigitaisImg from '@/assets/images/criativos-digitais.png'
+import educacaoConsultoriaImg from '@/assets/images/educacao-consultoria.png'
+import tecnicosEspecializadosImg from '@/assets/images/tecnicos-especializados.png'
+import transporteLogisticaImg from '@/assets/images/transporte-logistica.png'
+import eventosOutrosImg from '@/assets/images/eventos-outros.png'
+
+import setaCategorias from '@/assets/icons/seta-categorias.svg'
+import setaCategoriasVerTodos from '@/assets/icons/seta-categorias-vertodos.svg'
+
+const menuCategoriasIndex = ref(0)
+const categoriasPorPaginaDesktop = 7
+
 const categorias = [
-  { nome: 'Construção e Reparos', quantidade: '18 prestadores' },
-  { nome: 'Serviços Domésticos', quantidade: '12 prestadores' },
-  { nome: 'Beleza e Bem-estar', quantidade: '9 prestadores' },
-  { nome: 'Saúde e Qualidade de Vida', quantidade: '7 prestadores' },
-  { nome: 'Criativos e Digitais', quantidade: '10 prestadores' },
-  { nome: 'Educação e Consultoria', quantidade: '6 prestadores' },
-  { nome: 'Técnicos Especializados', quantidade: '11 prestadores' },
+  {
+    nome: 'Serviços Residenciais',
+    quantidade: '7 prestadores',
+    imagem: servicosResidenciaisImg,
+  },
+  {
+    nome: 'Construção e Reparos',
+    quantidade: '18 prestadores',
+    imagem: construcaoReparosImg,
+  },
+  {
+    nome: 'Serviços Domésticos',
+    quantidade: '6 prestadores',
+    imagem: servicosDomesticosImg,
+  },
+  {
+    nome: 'Beleza e Bem-estar',
+    quantidade: '5 prestadores',
+    imagem: belezaBemEstarImg,
+  },
+  {
+    nome: 'Saúde e Qualidade de Vida',
+    quantidade: '6 prestadores',
+    imagem: saudeQualidadeImg,
+  },
+  {
+    nome: 'Criativos e Digitais',
+    quantidade: '7 prestadores',
+    imagem: criativosDigitaisImg,
+  },
+  {
+    nome: 'Educação e Consultoria',
+    quantidade: '6 prestadores',
+    imagem: educacaoConsultoriaImg,
+  },
+  {
+    nome: 'Técnicos Especializados',
+    quantidade: '11 prestadores',
+    imagem: tecnicosEspecializadosImg,
+  },
+  {
+    nome: 'Transporte e Logística',
+    quantidade: '8 prestadores',
+    imagem: transporteLogisticaImg,
+  },
+  {
+    nome: 'Eventos e Outros',
+    quantidade: '4 prestadores',
+    imagem: eventosOutrosImg,
+  }
 ]
+
+const podeVoltarCategorias = computed(() => menuCategoriasIndex.value > 0)
+
+const podeAvancarCategorias = computed(() => menuCategoriasIndex.value + categoriasPorPaginaDesktop < categorias.length)
+
+const categoriasVisiveisDesktop = computed(() =>
+  categorias.slice(
+    menuCategoriasIndex.value,
+    menuCategoriasIndex.value + categoriasPorPaginaDesktop,
+  )
+)
+
+function avancarCategorias() {
+  if (!podeAvancarCategorias.value) return
+  menuCategoriasIndex.value += 1
+}
+
+function voltarCategorias() {
+  if (!podeVoltarCategorias.value) return
+  menuCategoriasIndex.value -= 1
+}
 
 const prestadoresDestaque = [
   {
@@ -126,19 +209,70 @@ const solicitacoesRecentes = [
       </section>
 
       <section class="categories">
-        <div class="section-heading">
-          <h2>Categorias de Serviços</h2>
-          <a href="#">Ver todos &gt;</a>
+        <h2 class="categories__title">Categorias de Serviços</h2>
+
+        <div class="categories__mobile">
+          <div class="categories__track">
+            <article v-for="categoria in categorias" :key="categoria.nome" class="category-card">
+              <img
+                class="category-card__icon"
+                :src="categoria.imagem"
+                :alt="`Ícone da categoria ${categoria.nome}`"
+              />
+              <h3>{{ categoria.nome }}</h3>
+              <p>{{ categoria.quantidade }}</p>
+            </article>
+          </div>
+
+          <p class="categories__hint">Deslize para ver mais</p>
         </div>
 
-        <div class="categories__track">
-          <article v-for="categoria in categorias" :key="categoria.nome" class="category-card">
-            <h3>{{ categoria.nome }}</h3>
-            <p>{{ categoria.quantidade }}</p>
-          </article>
+        <div class="categories__desktop">
+          <div class="categories__carousel">
+            <button
+              type="button"
+              class="categories__arrow"
+              :class="{ 'categories__arrow--disabled': !podeVoltarCategorias }"
+              :disabled="!podeVoltarCategorias"
+              aria-label="Voltar categorias"
+              @click="voltarCategorias"
+            >
+              <img :src="setaCategorias" alt="" />
+            </button>
+
+            <div class="categories__desktop-track">
+              <article
+                v-for="categoria in categoriasVisiveisDesktop"
+                :key="categoria.nome"
+                class="category-card"
+              >
+                <img
+                  class="category-card__icon"
+                  :src="categoria.imagem"
+                  :alt="`Ícone da categoria ${categoria.nome}`"
+                />
+                <h3>{{ categoria.nome }}</h3>
+                <p>{{ categoria.quantidade }}</p>
+              </article>
+            </div>
+
+            <button
+              type="button"
+              class="categories__arrow categories__arrow--next"
+              :class="{ 'categories__arrow--disabled': !podeAvancarCategorias }"
+              :disabled="!podeAvancarCategorias"
+              aria-label="Avançar categorias"
+              @click="avancarCategorias"
+            >
+              <img :src="setaCategorias" alt="" />
+            </button>
+          </div>
         </div>
 
-        <p class="categories__hint">Deslize para ver mais</p>
+        <a href="#" class="categories__view-all">
+          <span>Ver todos</span>
+          <img :src="setaCategoriasVerTodos" alt="" />
+        </a>
       </section>
 
       <section class="featured">
@@ -395,41 +529,143 @@ const solicitacoesRecentes = [
   padding: 3rem 0 0;
 }
 
-.categories__track {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 16rem;
+.categories {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 1rem;
+}
+
+.categories__title {
+  color: var(--color-neutral-darkest);
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: normal;
+  text-align: center;
+}
+
+.categories__mobile {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.categories__desktop {
+  display: none;
+}
+
+.categories__track {
+  display: flex;
+  gap: 1.25rem;
   overflow-x: auto;
-  padding-bottom: 0.5rem;
-  scrollbar-width: thin;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.categories__track::-webkit-scrollbar {
+  display: none;
 }
 
 .category-card {
-  background-color: var(--color-neutral-light-white);
-  border-radius: 1.25rem;
-  padding: 1.25rem;
-  box-shadow: 0 0.25rem 1rem #2a2a2a0d;
-  min-height: 7.5rem;
+  flex: 0 0 6.6009rem;
+  width: 6.6009rem;
+  min-height: 5.9408rem;
+  padding: 0.6601rem 0.99rem;
+  border-radius: 0.5281rem;
+  background: #fff;
+  box-shadow: 0 0 0.4951rem 0.165rem rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
+  gap: 0.264rem;
+  text-align: center;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.category-card__icon {
+  width: 2.6404rem;
+  height: 2.6404rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 .category-card h3 {
-  font-size: 1rem;
-  color: var(--color-neutral-darkest);
+  margin: 0;
+  color: #516b90;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.5281rem;
+  font-weight: 600;
+  line-height: normal;
 }
 
 .category-card p {
-  color: var(--color-neutral-dark);
-  font-size: 0.95rem;
+  margin: 0;
+  color: #aebdd5;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.3961rem;
+  font-weight: 500;
+  line-height: normal;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-0.15rem);
+  box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.08);
+}
+
+.category-card:hover .category-card__icon {
+  transform: scale(1.08);
+  filter: brightness(0) saturate(100%) invert(24%) sepia(27%) saturate(3262%) hue-rotate(227deg)
+    brightness(93%) contrast(96%);
+}
+
+.category-card:hover p {
+  transform: scale(1.08);
+  color: #3e3aa6;
 }
 
 .categories__hint {
-  margin-top: 0.75rem;
-  color: var(--color-neutral-dark);
-  font-size: 0.9rem;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 0 1.25rem;
+  color: #516b90;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.categories__view-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: #1f2937;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.categories__view-all img {
+  width: 0.375rem;
+  height: 0.5625rem;
 }
 
 .featured__grid,
@@ -696,6 +932,104 @@ const solicitacoesRecentes = [
 
   .provider-cta__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .categories {
+    padding-bottom: 2rem;
+    gap: 1rem;
+  }
+
+  .categories__title {
+    font-size: 2rem;
+  }
+
+  .categories__mobile {
+    display: none;
+  }
+
+  .categories__desktop {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+  }
+
+  .categories__carousel {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 0.575rem 0;
+  }
+
+  .categories__desktop-track {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 1rem;
+    flex: 1;
+  }
+
+  .categories__arrow {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 1rem;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 0.5rem;
+    background: #3e3aa6;
+    box-shadow: 0 0 0.625rem 0 rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+  }
+
+  .categories__arrow img {
+    width: 1.25rem;
+    height: 1.1875rem;
+  }
+
+  .categories__arrow--next img {
+    transform: rotate(180deg);
+  }
+
+  .categories__arrow--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .category-card {
+    flex: unset;
+    width: 100%;
+    min-height: 8.5rem;
+    padding: 1rem 0.875rem;
+    border-radius: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .category-card__icon {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+
+  .category-card h3 {
+    font-size: 0.72rem;
+  }
+
+  .category-card p {
+    font-size: 0.58rem;
+  }
+
+  .categories__view-all {
+    gap: 0.75rem;
+    font-size: 1.25rem;
+  }
+
+  .categories__view-all img {
+    width: 0.5rem;
+    height: 0.75rem;
   }
 }
 
