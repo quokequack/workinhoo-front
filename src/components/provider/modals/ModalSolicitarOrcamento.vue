@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch } from 'vue'
 import type { Prestador } from '@/types/prestador'
+import ModalSuccess from '@/components/layout/ModalSuccess.vue'
 
 const props = withDefaults(defineProps<{
   aberto: boolean
@@ -31,6 +32,8 @@ const cidadeMenuOpen = ref(false)
 const todosServicos = computed(() =>
   props.prestador.especialidades.map((e) => e.nome)
 )
+
+const modalSucessoAberto = ref(false)
 
 const bairrosDisponiveis = computed(() => props.prestador.area.bairros)
 const cidadesDisponiveis = computed(() => [props.prestador.area.cidade])
@@ -144,11 +147,20 @@ function resetarFormulario() {
   closeDropdowns()
 }
 
+function abrirModalSucesso() {
+  modalSucessoAberto.value = true
+}
+
+function fecharModalSucesso() {
+  modalSucessoAberto.value = false
+}
+
 function enviar() {
   closeDropdowns()
   emit('fechar')
   emit('enviado')
   resetarFormulario()
+  abrirModalSucesso()
 }
 </script>
 
@@ -338,7 +350,9 @@ function enviar() {
               <button class="btn btn-outline" type="button" @click="emit('fechar')">
                 Cancelar
               </button>
-              <button class="btn btn-primary" type="button" @click="enviar">
+              <button class="btn btn-primary" type="button"
+                :disabled="servicoSelecionado == '' || bairroSelecionado == '' || cidadeSelecionada == '' || horarios.length == 0"
+                @click="enviar">
                 Enviar solicitação
               </button>
             </div>
@@ -347,6 +361,10 @@ function enviar() {
       </div>
     </Transition>
   </Teleport>
+
+  <ModalSuccess :aberto="modalSucessoAberto" titulo="Solicitação enviada!"
+    subtitulo="Seu pedido de orçamento foi enviado para o prestador. Aguarde o retorno com um orçamento."
+    botaoTexto="Fechar" @fechar="fecharModalSucesso" />
 </template>
 
 <style scoped>
@@ -938,6 +956,20 @@ function enviar() {
       var(--color-primary-dark) 100%);
   border-color: var(--color-primary-dark);
   box-shadow: 0 1rem 2rem rgba(22, 29, 39, 0.18);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg,
+      color-mix(in srgb, var(--color-primary-dark) 90%, white) 0%,
+      var(--color-primary-dark) 100%);
+  border-color: var(--color-primary-dark);
+  box-shadow: 0 1rem 2rem rgba(22, 29, 39, 0.18);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .sort-dropdown {

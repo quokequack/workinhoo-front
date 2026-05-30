@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import type { Prestador } from '@/types/prestador'
 import ratingIcon from '@/assets/icons/rating.svg'
+import ModalSuccess from '@/components/layout/ModalSuccess.vue'
 
 const props = defineProps<{
   aberto: boolean
@@ -27,6 +28,8 @@ const tags = [
   'Recomendo'
 ]
 
+const modalSucessoAberto = ref(false)
+
 function toggleTag(tag: string) {
   const idx = tagsSelecionadas.value.indexOf(tag)
   if (idx >= 0) tagsSelecionadas.value.splice(idx, 1)
@@ -37,6 +40,7 @@ function publicar() {
   if (nota.value === 0) return
   emit('publicado')
   emit('fechar')
+  abrirModalSucesso()
 }
 
 function resetarEstado() {
@@ -44,6 +48,14 @@ function resetarEstado() {
   notaHover.value = 0
   tagsSelecionadas.value = []
   descricao.value = ''
+}
+
+function abrirModalSucesso() {
+  modalSucessoAberto.value = true
+}
+
+function fecharModalSucesso() {
+  modalSucessoAberto.value = false
 }
 
 defineExpose({ resetarEstado })
@@ -146,6 +158,9 @@ watch(
       </div>
     </Transition>
   </Teleport>
+
+  <ModalSuccess :aberto="modalSucessoAberto" titulo="Avaliação publicada!"
+    subtitulo="Obrigado por avaliar esse prestador de serviço." botaoTexto="Fechar" @fechar="fecharModalSucesso" />
 </template>
 
 <style scoped>
